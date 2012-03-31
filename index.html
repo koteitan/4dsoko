@@ -11,15 +11,18 @@
 <script type="text/javascript" src="./4dsoko_main.js"></script>
 <script type="text/javascript" src="./4dsoko_event.js"></script>
 <style><!--
-  body{font-family:Arial; color:white; background-color:black}
-  
+  body{font-family:Arial; color:white; background-color:black}  
+  input{border-style:solid}
 --></style>
 <title>4Dsoko</title>
 </head>
 <body>
 <h1>4Dsoko</h1>
-<canvas id="canvas1" width="256" height="16" style="background-color:black;border-width:1px;border-style:solid;border-color:#00FF00"></canvas>
-<canvas id="canvas0" width="256" height="256" style="background-color:black;border-width:1px;border-style:solid;border-color:#00FF00"></canvas>
+<canvas id="canvas1" width="256" height="16" style="background-color:black;border-width:1px;border-style:solid;border-color:#00FF00"></canvas><br>
+<canvas id="canvas0" width="256" height="256" style="background-color:black;border-width:1px;border-style:solid;border-color:#00FF00"></canvas><br>
+<form id="modeform">
+<input type=radio name="mode" id="mode" value="play" checked>play
+<input type=radio name="mode" id="mode" value="edit">edit</form>
 <div id="debugout"></div>
 </body>
 </html>

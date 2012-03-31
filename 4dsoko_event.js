@@ -12,7 +12,6 @@ var mousePos     = [-1,-1];
 var mouseUpPos   = [-1,-1];
 // initialization
 var initEvent=function(){
-  window.onresize();
   eventQueue = new Array(0);
   if (!document.all){
     //not IE
@@ -28,6 +27,10 @@ var initEvent=function(){
 //    canvas[0].attachEvent('onmouseup',   addEvent_forIE);
 //    canvas[0].attachEvent('onmouseout',  addEvent_forIE);
   }
+  document.getElementById("mode").addEventListener("click", function(){
+    handleChangeMode(document.getElementById("modeform").mode[1].checked);
+  });
+  window.onresize();
 };
 // procedure
 var procEvent = function(){
@@ -61,13 +64,12 @@ var procEvent = function(){
       case "mouseout":   // mouse out ---------
       if(isMouseDragged){
         isMouseDragged = false;
-        isRealTimeCursor = false;
         mouseUpPos = [x,y];
         handleMouseUp();
       }
       break;
       case "keydown":   // mouse up ---------
-        handleKeyDown();
+        handleKeyDown(e);
       break;
       default:
       break;
@@ -101,7 +103,12 @@ var handleMouseUp = function(){
 }
 var handleMouseMoving = function(){
 }
-var handleKeyDown = function(){
+var handleKeyDown = function(e){
+  var c = String.fromCharCode(e.keyCode);
+  var motion = "AW__DX__".indexOf(c);
+  if(motion<0) return;
+  if(e.shiftKey) motion+=2;
+  movePlayer(motion);
   isRequestedDraw = true;
 }
 window.onresize = function(){
@@ -113,3 +120,9 @@ if(1){
   isRequestedDraw = true;
 };
 
+var handleChangeMode = function(newmode){
+  mode = newmode;
+  if(mode==0){
+    readyPlay();
+  }
+}
