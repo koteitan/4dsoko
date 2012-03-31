@@ -226,10 +226,10 @@ var procDraw=function(){
   // toolbar
   ctx[1].clearRect(0, 0, canvas[1].width-1, canvas[1].height-1);
   if(mode==1){
-    ctx[1].fillStyle="rgb(0,0,128)";
-    ctx[1].fillRect  (64*selchara+1, 1, 64-12, canvas[1].height-1);
-    ctx[1].strokeStyle="rgb(0,0,255)";
-    ctx[1].strokeRect(64*selchara+1, 1, 64-12, canvas[1].height-1);
+    ctx[1].fillStyle="rgb(0,0,255)";
+    ctx[1].fillRect  (64*selchara+2, 2, 64-12, canvas[1].height-3);
+    ctx[1].strokeStyle="rgb(128,128,255)";
+    ctx[1].strokeRect(64*selchara+2, 2, 64-12, canvas[1].height-3);
   }
   var centery = canvas[1].height/2;
   if(!document.all){
@@ -307,6 +307,24 @@ var movePlayer=function(motion){
 var moveCursor=function(motion){
   for(var d=0;d<4;d++){
     camPos[d] = motiondiff[d][motion]+camPos[d];
+  }
+  if(camPos[0]<0){
+    camPos[0]=mmax-1;
+    camPos[2]--;
+  }
+  if(camPos[0]==mmax){
+    camPos[0]=0;
+    camPos[2]++;
+  }
+  if(camPos[1]<0){
+    camPos[1]=mmax-1;
+    camPos[3]--;
+  }
+  if(camPos[1]==mmax){
+    camPos[1]=0;
+    camPos[3]++;
+  }
+  for(var d=0;d<4;d++){
     camPos[d] = (camPos[d] + mmax) % mmax; //torus
     curPos[d] = camPos[d];
   }

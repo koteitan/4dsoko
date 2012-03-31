@@ -26,13 +26,24 @@ var initEvent=function(){
 //    canvas[0].attachEvent('onmousemove', addEvent_forIE);
 //    canvas[0].attachEvent('onmouseup',   addEvent_forIE);
 //    canvas[0].attachEvent('onmouseout',  addEvent_forIE);
+    document.onkeydown      = addEvent_forIE;
   }
-  document.getElementById("mode_play").addEventListener("click", function(){
-    handleChangeMode(document.getElementById("modeform").mode[1].checked);
-  });
-  document.getElementById("mode_edit").addEventListener("click", function(){
-    handleChangeMode(document.getElementById("modeform").mode[1].checked);
-  });
+  if(document.getElementById("mode_play").addEventListener){
+    document.getElementById("mode_play").addEventListener("click", function(){
+      handleChangeMode(document.getElementById("modeform").mode[1].checked);
+    });
+    document.getElementById("mode_edit").addEventListener("click", function(){
+      handleChangeMode(document.getElementById("modeform").mode[1].checked);
+    });
+  }else{
+    //IE
+    document.getElementById("mode_play").attachEvent("onclick", function(){
+      handleChangeMode(document.getElementById("modeform").mode[1].checked);
+    });
+    document.getElementById("mode_edit").attachEvent("onclick", function(){
+      handleChangeMode(document.getElementById("modeform").mode[1].checked);
+    });
+  }
   window.onresize();
 };
 // procedure
@@ -94,6 +105,7 @@ var addEvent_forIE = function(){
   e.type=event.type;
   e.x=event.offsetX;
   e.y=event.offsetY;
+  e.keyCode = event.keyCode;
   addEvent(e);
 };
 
@@ -160,22 +172,35 @@ var handleMouseMoving = function(){
   isRequestedDraw = true;
 }
 var handleKeyDown = function(e){
-  if(e.keyCode==13){
-    map[curPos[3]][curPos[2]][curPos[1]][curPos[0]] = selchara;
-    isRequestedDraw = true;
-  }else if(e.keyCode==32){
-    selchara = (selchara+1) % SokoObj.charactors;
-    isRequestedDraw = true;
+  if(mode==1){
+    // edit
+    if(e.keyCode==13){
+      // put
+      map[curPos[3]][curPos[2]][curPos[1]][curPos[0]] = selchara;
+      isRequestedDraw = true;
+    }else if("E".indexOf(String.fromCharCode(e.keyCode))==0){
+      // sel--
+      selchara = (selchara+1+SokoObj.charactors) % SokoObj.charactors;
+      isRequestedDraw = true;
+    }else if("Q".indexOf(String.fromCharCode(e.keyCode))==0){
+      // sel++
+      selchara = (selchara-1+SokoObj.charactors) % SokoObj.charactors;
+      isRequestedDraw = true;
+    }else{
+      // play
+      var c = String.fromCharCode(e.keyCode);
+      var motion = "AW__DX__".indexOf(c);
+      if(motion<0) return;
+      moveCursor(motion);
+      isRequestedDraw = true;
+    }
   }else{
+    // play
     var c = String.fromCharCode(e.keyCode);
     var motion = "AW__DX__".indexOf(c);
     if(motion<0) return;
     if(e.shiftKey) motion+=2;
-    if(mode==0){
-      movePlayer(motion);
-    }else{
-      moveCursor(motion);
-    }
+    movePlayer(motion);
     isRequestedDraw = true;
   }
 }
