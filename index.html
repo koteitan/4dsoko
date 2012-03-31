@@ -13,6 +13,11 @@
 <style><!--
   body{font-family:Arial; color:white; background-color:black}  
   input{border-style:solid}
+  a{color:#ffffff;border-style:none;text-decoration:underline}
+  a:link{color:#ffffff;border-style:none;text-decoration:underline}
+  a:visited{color:#ffffff;border-style:none;text-decoration:underline}
+  a:hover{color:#ffffff;border-color:none;text-decoration:underline}
+  address{text-align:right}
 --></style>
 <title>4Dsoko</title>
 </head>
@@ -21,8 +26,29 @@
 <canvas id="canvas1" width="256" height="16" style="background-color:black;border-width:1px;border-style:solid;border-color:#00FF00"></canvas><br>
 <canvas id="canvas0" width="256" height="256" style="background-color:black;border-width:1px;border-style:solid;border-color:#00FF00"></canvas><br>
 <form id="modeform">
-<input type=radio name="mode" id="mode" value="play" checked>play
-<input type=radio name="mode" id="mode" value="edit">edit</form>
+<input type=radio name="mode" id="mode_play" value="play" checked>play
+<input type=radio name="mode" id="mode_edit" value="edit">edit</form>
 <div id="debugout"></div>
+
+<p>
+4-dimensional soko.<br>
+<table>
+<tr><th>key</th><th>function</th></tr>
+<tr><td>a</td><td>move to -x.</td></tr>
+<tr><td>d</td><td>move to +x.</td></tr>
+<tr><td>w</td><td>move to -y.</td></tr>
+<tr><td>x</td><td>move to +y.</td></tr>
+<tr><td>A</td><td>move to -z.</td></tr>
+<tr><td>D</td><td>move to +z.</td></tr>
+<tr><td>W</td><td>move to -w.</td></tr>
+<tr><td>X</td><td>move to +w.</td></tr>
+<tr><td>[space]</td><td>change charactor.</td></tr>
+<tr><td>[enter]</td><td>put charactor.</td></tr>
+</table>
+</p>
+<address>
+programed by <a href="http://twitter.com/#!/koteitan">koteitan</a><br>
+source code is at <a href="https://github.com/koteitan/4dsoko">github</a><br>
+</address>
 </body>
 </html>
