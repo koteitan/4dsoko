@@ -19,19 +19,19 @@ SokoObj.draw[SokoObj.Blank] = function(ctx,x,y){};
   // box -------
 SokoObj.draw[SokoObj.Box] = function(ctx,x,y){
   ctx.fillStyle = 'rgb(128,128,255)'; //magenta
-  ctx.fillRect(x-SokoObj.charaLen/2, y-SokoObj.charaLen/2, SokoObj.charaLen, SokoObj.charaLen);
+  ctx.fillRect(x, y, SokoObj.charaLen, SokoObj.charaLen);
 };
 // player -------
 SokoObj.draw[SokoObj.Player] = function(ctx,x,y){
   ctx.fillStyle = 'rgb(0,255,0)'; //green
-  ctx.fillRect(x-SokoObj.charaLen/2, y-SokoObj.charaLen/2, SokoObj.charaLen, SokoObj.charaLen);
+  ctx.fillRect(x, y, SokoObj.charaLen, SokoObj.charaLen);
 };
 // goal -------
 SokoObj.draw[SokoObj.Goal] = function(ctx,x,y){
   ctx.strokeStyle = 'rgb(0,0,0)'; //black
   ctx.fillStyle = 'rgb(255,255,0)'; //orange
   ctx.beginPath();
-  ctx.arc(x, y, SokoObj.charaLen/2*0.5, 0, Math.PI*2, false);
+  ctx.arc(x+SokoObj.charaLen/2, y+SokoObj.charaLen/2, SokoObj.charaLen/2*0.5, 0, Math.PI*2, false);
   ctx.fill();
 };
 // box on goal -------
@@ -47,12 +47,12 @@ SokoObj.draw[SokoObj.GoalPlayer] = function(ctx,x,y){
 // wall -------
 SokoObj.draw[SokoObj.Wall] = function(ctx,x,y){
   ctx.fillStyle = 'rgb(255,0,0)'; //red
-  ctx.fillRect(x-SokoObj.charaLen/2, y-SokoObj.charaLen/2, SokoObj.charaLen, SokoObj.charaLen);
+  ctx.fillRect(x, y, SokoObj.charaLen, SokoObj.charaLen);
 }
 SokoObj.draw2 = SokoObj.draw.clone();
 SokoObj.draw2[SokoObj.Blank] = function(ctx,x,y){
   ctx.fillStyle = 'rgb(0,0,0)'; //black
-  ctx.fillRect(x-SokoObj.charaLen/2, y-SokoObj.charaLen/2, SokoObj.charaLen, SokoObj.charaLen);
+  ctx.fillRect(x, y, SokoObj.charaLen, SokoObj.charaLen);
 };
 // dinamic var on game
 var mode=0; // 0:play 1:edit
@@ -93,7 +93,7 @@ var frameRate;
 if(document.all){
   frameRate =  1; // [fps]
 }else{
-  frameRate = 10; // [fps]
+  frameRate = 60; // [fps]
 }
 var debugout;
 //initialize -----------
@@ -164,64 +164,36 @@ var procDraw=function(){
   //map ---------
   var camLenPx = camLen*SokoObj.charaLen;
   var camLenp2 = camLen/2;
-  var wfDrawnRange = [
-    [
-      camPos[0]-          ((canvas[0].width )%camLenPx)/2/SokoObj.charaLen,
-      camPos[1]-          ((canvas[0].height)%camLenPx)/2/SokoObj.charaLen,
-      camPos[2]-Math.floor((canvas[0].width )/camLenPx)/2,
-      camPos[3]-Math.floor((canvas[0].height)/camLenPx)/2,
-    ],[
-      camPos[0]+          ((canvas[0].width )%camLenPx)/2/SokoObj.charaLen,
-      camPos[1]+          ((canvas[0].height)%camLenPx)/2/SokoObj.charaLen,
-      camPos[2]+Math.floor((canvas[0].width )/camLenPx)/2+1,
-      camPos[3]+Math.floor((canvas[0].height)/camLenPx)/2+1,
-    ]
-  ];/* drawn range in world coordinate
-  wfDrawnRange = {{x0,y0,z0,w0},{x1,1,z1,w1} }*/
-  wiDrawnRange = [[0,0,0,0],[0,0,0,0]]; // integer components
-//  var wrDrawnRange = [[0,0,0,0],[0,0,0,0]]; // residue components
-  for(var i=0;i<4;i++){
-    wiDrawnRange[0][i] = Math.floor(wfDrawnRange[0][i]);
-    wiDrawnRange[1][i] = Math.floor(wfDrawnRange[1][i])+1;
-//    wrDrawnRange[0][i] =            wfDrawnRange[0][i] % 1;
-//    wrDrawnRange[1][i] =           (wfDrawnRange[1][i] % 1) + 1;
-  }
-  if(isDebug2){
-    debugout.innerHTML = "wfDrawnRange="+wfDrawnRange.toString();
-    debugout.innerHTML += "<br>wiDrawnRange="+wiDrawnRange.toString();
-  }
-  for(var w=wiDrawnRange[0][3];w<wiDrawnRange[1][3];w++){
-    for(var z=wiDrawnRange[0][2];z<wiDrawnRange[1][2];z++){
-      if(w>=0 && w<mmax && z>=0 && z<mmax){
-        for(var y=0;y<camLen;y++){
-          for(var x=0;x<camLen;x++){
-            if(x>=0 && x<mmax && y>=0 && y<mmax){
-              var dx = (z-wfDrawnRange[0][2])*camLenPx 
-                     + (x-wfDrawnRange[0][0])*SokoObj.charaLen;
-              var dy = (w-wfDrawnRange[0][3])*camLenPx 
-                     + (y-wfDrawnRange[0][1])*SokoObj.charaLen;
-              (SokoObj.draw[map[w][z][y][x]])(ctx[0],dx,dy);
-            }
-          } //x
-        } //y
-        ctx[0].strokeStyle = 'rgb(0,255,255)';
-        var dx = (z-wfDrawnRange[0][2])*camLenPx 
-               + (0-wfDrawnRange[0][0])*SokoObj.charaLen;
-        var dy = (w-wfDrawnRange[0][3])*camLenPx 
-               + (0-wfDrawnRange[0][1])*SokoObj.charaLen;
-        ctx[0].strokeRect(dx-camLenp2, dy-camLenp2, camLenPx, camLenPx);
-      }//if wz
+  for(var w=0;w<mmax;w++){
+    var w0 = canvas[0].height/2+(w-camPos[3])*camLenPx + (-camPos[1])*SokoObj.charaLen;
+    var w1 = w0+camLenPx;
+    if(w1<0 || w0>canvas[0].height) continue;
+    for(var z=0;z<mmax;z++){
+      var z0 = canvas[0].width/2+(z-camPos[2])*camLenPx + (-camPos[0])*SokoObj.charaLen;
+      var z1 = z0+camLenPx;
+      if(z1<0 || z0>canvas[0].width) continue;
+      for(var y=0;y<camLen;y++){
+        var y0 = w0 + y*SokoObj.charaLen;
+        var y1 = y1 + SokoObj.charaLen;
+        if(y1<0 || y1>canvas[0].height) continue;
+        for(var x=0;x<camLen;x++){
+          var x0 = z0 + x*SokoObj.charaLen;
+          var x1 = x1 + SokoObj.charaLen;
+          if(x1<0 || x1>canvas[0].width) continue;
+          (SokoObj.draw[map[w][z][y][x]])(ctx[0],x0-camLenp2,y0-camLenp2);
+        } //x
+      } //y
+      ctx[0].strokeStyle = 'rgb(0,255,255)';
+      ctx[0].strokeRect(z0-camLenp2, w0-camLenp2, camLenPx, camLenPx);
     } //z
   }//w
-//  ctx[0].strokeRect(0,0, canvas[0].width/2, canvas[0].height/2); //debug
+// ctx[0].strokeRect(0,0, canvas[0].width/2, canvas[0].height/2); //debug
   // curPos
   if(mode==1){
     ctx[0].strokeStyle="rgb(255,255,255)";
-    var dx = (curPos[2]-wfDrawnRange[0][2])*camLenPx 
-           + (curPos[0]-wfDrawnRange[0][0])*SokoObj.charaLen;
-    var dy = (curPos[3]-wfDrawnRange[0][3])*camLenPx 
-           + (curPos[1]-wfDrawnRange[0][1])*SokoObj.charaLen;
-    ctx[0].strokeRect(dx-camLenp2,dy-camLenp2,SokoObj.charaLen, SokoObj.charaLen);
+    var cx = canvas[0].width /2+(curPos[2]-camPos[2])*camLenPx + (curPos[0]-camPos[0])*SokoObj.charaLen-camLenp2;
+    var cy = canvas[0].height/2+(curPos[3]-camPos[3])*camLenPx + (curPos[1]-camPos[1])*SokoObj.charaLen-camLenp2;
+    ctx[0].strokeRect(cx, cy, SokoObj.charaLen, SokoObj.charaLen);
   }
   // toolbar
   ctx[1].clearRect(0, 0, canvas[1].width-1, canvas[1].height-1);
@@ -242,7 +214,7 @@ var procDraw=function(){
     }
   }
   for(var c=0;c<SokoObj.charactors;c++){
-    SokoObj.draw2[c](ctx[1], 64*c+SokoObj.charaLen/2+6,centery);
+    SokoObj.draw2[c](ctx[1], 64*c+2,centery-SokoObj.charaLen/2);
   }
 }
 
@@ -329,7 +301,88 @@ var moveCursor=function(motion){
     curPos[d] = camPos[d];
   }
 }
+//event handlers after queue ------------
+var display2World = function (disp){
+  var camLenPx = SokoObj.charaLen*camLen;
+  var numerx = disp[0] - canvas[0].width/2  + camPos[2]*camLenPx + camPos[0]*SokoObj.charaLen + SokoObj.charaLen/2;
+  var numery = disp[1] - canvas[0].height/2 + camPos[3]*camLenPx + camPos[1]*SokoObj.charaLen + SokoObj.charaLen/2;
+  var wp = new Array(4);
+  wp[2] = Math.floor(numerx/camLenPx);
+  wp[3] = Math.floor(numery/camLenPx);
+  wp[0] = Math.floor((numerx%camLenPx)/SokoObj.charaLen);
+  wp[1] = Math.floor((numery%camLenPx)/SokoObj.charaLen);
+  return wp;
+}
+var handleMouseDown = function(){
+  var wiMousePos = display2World(mouseDownPos);
+  for(var d=0;d<4;d++){
+    if(wiMousePos[d]<0 || wiMousePos[d]>mmax) return;
+  }
+  map[wiMousePos[3]][wiMousePos[2]][wiMousePos[1]][wiMousePos[0]] = selchara;
+  curPos = wiMousePos.clone(); 
+  isRequestedDraw = true;
+}
+var handleMouseDragging = function(){
+  mouseDownPos = mousePos.clone();
+  handleMouseDown();
+}
+var handleMouseUp = function(){
+}
+var handleMouseMoving = function(){
+  var wiMousePos = display2World(mousePos);
+  for(var d=0;d<4;d++){
+    if(wiMousePos[d]<0 || wiMousePos[d]>mmax) return;
+  }
+  curPos = wiMousePos.clone(); 
+  isRequestedDraw = true;
+}
+var handleKeyDown = function(e){
+  if(mode==1){
+    // edit
+    if(e.keyCode==13){
+      // put
+      map[curPos[3]][curPos[2]][curPos[1]][curPos[0]] = selchara;
+      isRequestedDraw = true;
+    }else if("E".indexOf(String.fromCharCode(e.keyCode))==0){
+      // sel--
+      selchara = (selchara+1+SokoObj.charactors) % SokoObj.charactors;
+      isRequestedDraw = true;
+    }else if("Q".indexOf(String.fromCharCode(e.keyCode))==0){
+      // sel++
+      selchara = (selchara-1+SokoObj.charactors) % SokoObj.charactors;
+      isRequestedDraw = true;
+    }else{
+      // play
+      var c = String.fromCharCode(e.keyCode);
+      var motion = "AW__DX__".indexOf(c);
+      if(motion<0) return;
+      moveCursor(motion);
+      isRequestedDraw = true;
+    }
+  }else{
+    // play
+    var c = String.fromCharCode(e.keyCode);
+    var motion = "AW__DX__".indexOf(c);
+    if(motion<0) return;
+    if(e.shiftKey) motion+=2;
+    movePlayer(motion);
+    isRequestedDraw = true;
+  }
+}
+window.onresize = function(){
+  document.getElementById("canvas0").width  = document.documentElement.clientWidth-300;
+  document.getElementById("canvas0").height = (document.documentElement.clientHeight-400)*0.9;
+  document.getElementById("canvas1").width  = document.getElementById("canvas0").width
+  isRequestedDraw = true;
+};
 
+var handleChangeMode = function(newmode){
+  mode = newmode;
+  if(mode==0){
+    readyPlay();
+  }
+  isRequestedDraw = true;
+}
 
 
 

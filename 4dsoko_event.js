@@ -15,17 +15,17 @@ var initEvent=function(){
   eventQueue = new Array(0);
   if (!document.all){
     //not IE
-//    canvas[0].onmousedown = addEvent;
-//    canvas[0].onmousemove = addEvent;
-//    canvas[0].onmouseup   = addEvent;
+    canvas[0].onmousedown = addEvent;
+    canvas[0].onmousemove = addEvent;
+    canvas[0].onmouseup   = addEvent;
     window.onkeydown      = addEvent;
-//    canvas[0].onmouseout  = addEvent;
+    canvas[0].onmouseout  = addEvent;
   }else{
     //IE Only
-//    canvas[0].attachEvent('onmousedown', addEvent_forIE);
-//    canvas[0].attachEvent('onmousemove', addEvent_forIE);
-//    canvas[0].attachEvent('onmouseup',   addEvent_forIE);
-//    canvas[0].attachEvent('onmouseout',  addEvent_forIE);
+    canvas[0].attachEvent('onmousedown', addEvent_forIE);
+    canvas[0].attachEvent('onmousemove', addEvent_forIE);
+    canvas[0].attachEvent('onmouseup',   addEvent_forIE);
+    canvas[0].attachEvent('onmouseout',  addEvent_forIE);
     document.onkeydown      = addEvent_forIE;
   }
   if(document.getElementById("mode_play").addEventListener){
@@ -109,112 +109,3 @@ var addEvent_forIE = function(){
   addEvent(e);
 };
 
-//event handlers after queue ------------
-var handleMouseDown = function(){
-  var camLenPx = camLen*SokoObj.charaLen;
-  var camLenp2 = camLen/2;
-  var wfMousePos = new Array(4);
-  var wfDrawnRange = [
-    camPos[0]-          ((canvas[0].width )%camLenPx)/2/SokoObj.charaLen,
-    camPos[1]-          ((canvas[0].height)%camLenPx)/2/SokoObj.charaLen,
-    camPos[2]-Math.floor((canvas[0].width )/camLenPx)/2,
-    camPos[3]-Math.floor((canvas[0].height)/camLenPx)/2,
-  ];
-  var wfMousePos = [
-    wfDrawnRange[0]+((mousePos[0]/SokoObj.charaLen)%camLen),
-    wfDrawnRange[1]+((mousePos[1]/SokoObj.charaLen)%camLen),
-    wfDrawnRange[2]+mousePos[0]/camLenPx,
-    wfDrawnRange[3]+mousePos[1]/camLenPx,
-  ];
-  var wiMousePos = new Array(4);
-  for(var d=0;d<4;d++){
-    wiMousePos[d]=Math.floor(wfMousePos[d]);
-  }
-  if(isDebug2){
-    debugout.innerHTML = "wiMousePos = "+wiMousePos.toString();
-  }
-  map[wiMousePos[3]][wiMousePos[2]][wiMousePos[1]][wiMousePos[0]] = selchara;
-  isRequestedDraw = true;
-}
-var handleMouseDragging = function(){
-}
-var handleMouseUp = function(){
-}
-var handleMouseMoving = function(){
-  var camLenPx = camLen*SokoObj.charaLen;
-  var camLenp2 = camLen/2;
-  var wfMousePos = new Array(4);
-  var wfDrawnRange = [
-    camPos[0]-          ((canvas[0].width )%camLenPx)/2/SokoObj.charaLen,
-    camPos[1]-          ((canvas[0].height)%camLenPx)/2/SokoObj.charaLen,
-    camPos[2]-Math.floor((canvas[0].width )/camLenPx)/2,
-    camPos[3]-Math.floor((canvas[0].height)/camLenPx)/2,
-  ];
-  var wfMousePos = [
-    wfDrawnRange[0]+((mousePos[0])%camLenPx)/SokoObj.charaLen,
-    wfDrawnRange[1]+((mousePos[1])%camLenPx)/SokoObj.charaLen,
-    wfDrawnRange[2]+(mousePos[0])/camLenPx+1/2,
-    wfDrawnRange[3]+(mousePos[1])/camLenPx+1/2,
-  ];
-  var wiMousePos = new Array(4);
-  for(var d=0;d<4;d++){
-    wiMousePos[d]=Math.floor(wfMousePos[d]);
-  }
-  if(isDebug2){
-    debugout.innerHTML = "wiMousePos = "+wiMousePos.toString();
-  }
-  for(var d=0;d<4;d++){
-    if(wiMousePos[d]<0 || wiMousePos[d]>=mmax){
-      return;
-    }
-  }
-  curPos = wiMousePos.clone();
-  isRequestedDraw = true;
-}
-var handleKeyDown = function(e){
-  if(mode==1){
-    // edit
-    if(e.keyCode==13){
-      // put
-      map[curPos[3]][curPos[2]][curPos[1]][curPos[0]] = selchara;
-      isRequestedDraw = true;
-    }else if("E".indexOf(String.fromCharCode(e.keyCode))==0){
-      // sel--
-      selchara = (selchara+1+SokoObj.charactors) % SokoObj.charactors;
-      isRequestedDraw = true;
-    }else if("Q".indexOf(String.fromCharCode(e.keyCode))==0){
-      // sel++
-      selchara = (selchara-1+SokoObj.charactors) % SokoObj.charactors;
-      isRequestedDraw = true;
-    }else{
-      // play
-      var c = String.fromCharCode(e.keyCode);
-      var motion = "AW__DX__".indexOf(c);
-      if(motion<0) return;
-      moveCursor(motion);
-      isRequestedDraw = true;
-    }
-  }else{
-    // play
-    var c = String.fromCharCode(e.keyCode);
-    var motion = "AW__DX__".indexOf(c);
-    if(motion<0) return;
-    if(e.shiftKey) motion+=2;
-    movePlayer(motion);
-    isRequestedDraw = true;
-  }
-}
-window.onresize = function(){
-  document.getElementById("canvas0").width  = document.documentElement.clientWidth*0.9;
-  document.getElementById("canvas0").height = (document.documentElement.clientHeight-200)*0.9;
-  document.getElementById("canvas1").width  = document.getElementById("canvas0").width
-  isRequestedDraw = true;
-};
-
-var handleChangeMode = function(newmode){
-  mode = newmode;
-  if(mode==0){
-    readyPlay();
-  }
-  isRequestedDraw = true;
-}
