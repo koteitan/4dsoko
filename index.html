@@ -19,40 +19,55 @@
   a:hover{color:#ffffff;border-color:none;text-decoration:underline}
   address{text-align:right}
   td{text-align:center}
+  .tdbutton{border-width:1px;border-style:solid;border-color:white;height:30px;width:30px}
 --></style>
 <title>4Dsoko</title>
 </head>
 <body>
-<h1>4Dsoko</h1>
-<table><td>
-<canvas id="canvas1" width="256" height="16" style="background-color:black;border-width:1px;border-style:solid;border-color:#00FF00"></canvas><br>
-<canvas id="canvas0" width="256" height="256" style="background-color:black;border-width:1px;border-style:solid;border-color:#00FF00"></canvas><br>
+<div style="vertical-align:top"><img src="logo.png">&nbsp;4 dimensional sokoban like puzzle.</div>
+<br>
+<table style="width:100%"><td style="text-align:right"">
+  <table align="right" style="font-size:8pt"><caption>Softkey</caption>
+  <col span=3 style="width:30px">
+  <tr><td></td><td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=false;e.keyCode=87;handleKeyDown(e);">w</td><td>→<br>+x</td></tr>
+  <tr>         <td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=false;e.keyCode=65;handleKeyDown(e);">a</td>
+  <td></td>    <td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=false;e.keyCode=68;handleKeyDown(e);">d</td></tr>
+  <tr><td>↓+y</td><td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=false;e.keyCode=88;handleKeyDown(e);">x</td><td></td></tr>
+  <tr><td style="height:20px"></td></tr>
+  <tr><td></td><td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=true ;e.keyCode=87;handleKeyDown(e);">W</td><td>→<br>+z</td></tr>
+  <tr>         <td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=true ;e.keyCode=65;handleKeyDown(e);">A</td>
+  <td></td>    <td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=true ;e.keyCode=68;handleKeyDown(e);">D</td></tr>
+  <tr><td>↓+w</td><td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=true ;e.keyCode=88;handleKeyDown(e);">X</td><td></td></tr>
+  </table>
+</td><td style="text-align:left">
+<canvas align="left" id="canvas1" width="256" height="16" style="background-color:black;border-width:1px;border-style:solid;border-color:#00FF00"></canvas><br>
+<canvas align="left" id="canvas0" width="256" height="256" style="background-color:black;border-width:1px;border-style:solid;border-color:#00FF00"></canvas><br>
 <form id="modeform">
 <input type=radio name="mode" id="mode_play" value="play" checked>play
 <input type=radio name="mode" id="mode_edit" value="edit">edit</form>
 <div id="debugout"></div>
-</td><td>
-  <h2>key assign:</h2>
-  <table><caption>to play</caption>
+</td><td style="text-align:center" id="keydescription">
+<span style="font-size:8pt">Key Assign:</span><br>
+  <table style="font-size:8pt;width:100%"><caption>to play</caption>
   <tr><th>key</th><th>function</th></tr>
   <tr><td>awdx</td><td>move in (x,y).</td></tr>
   <tr><td>AWDX</td><td>move in (z,w).</td></tr>
   </table>
   <br>
-  <table><caption>to edit</caption>
+  <table style="font-size:8pt;width:100%"><caption>to edit</caption>
   <tr><th>key</th><th>function</th></tr>
   <tr><td>awdx</td><td>move cursor.</td></tr>
   <tr><td>q/e</td><td>change charactor.</td></tr>
-  <tr><td>[enter]</td><td>put charactor.</td></tr>
-  <tr><td>mouse<br>left click</td><td>put charactor.</td></tr>
+  <tr><td>[enter]<br>/mouse</td><td>put charactor.</td></tr>
+  <tr><td>shift +<br> mouse</td><td>put multiple charactors.</td></tr>
+  <tr><td>wheel</td><td>scroll.</td></tr>
   </table>
-
 </td></tr></table>
-<p>
-<a href="about.html">about this game</a>
-</p>
 <address>
-version 1.2<br>
+<a href="about.html">about this game</a>
+</address>
+<address>
+version 1.3<br>
 programed by <a href="http://twitter.com/#!/koteitan">koteitan</a><br>
 source code is at <a href="https://github.com/koteitan/4dsoko">github</a><br>
 </address>

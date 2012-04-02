@@ -1,6 +1,4 @@
 //events ----------------------
-//local
-var mouseDownPosW    = [-1,-1]; // (world axes)
 //variables
 var eventQueue = [];  //eventQueue[i] = <MouseEvent>
 var eventsMax  = 100; 
@@ -10,22 +8,38 @@ var isMouseDragged = false;
 var mouseDownPos = [-1,-1];
 var mousePos     = [-1,-1];
 var mouseUpPos   = [-1,-1];
+var mouseButton = -1;
+var mouseWithShiftKey = false;
+var mouseTarget = -1;
+var mouseWheel = [0,0];
+var MouseLeft  = 0;
+var MouseRight = 2;
 // initialization
 var initEvent=function(){
   eventQueue = new Array(0);
+  if (window.addEventListener) window.addEventListener('DOMMouseScroll', addEvent, false);
+  window.onmousewheel = document.onmousewheel = addEvent;
   if (!document.all){
     //not IE
     canvas[0].onmousedown = addEvent;
     canvas[0].onmousemove = addEvent;
     canvas[0].onmouseup   = addEvent;
-    window.onkeydown      = addEvent;
     canvas[0].onmouseout  = addEvent;
+    canvas[1].onmousedown = addEvent;
+    canvas[1].onmousemove = addEvent;
+    canvas[1].onmouseup   = addEvent;
+    canvas[1].onmouseout  = addEvent;
+    window.onkeydown      = addEvent;
   }else{
     //IE Only
     canvas[0].attachEvent('onmousedown', addEvent_forIE);
     canvas[0].attachEvent('onmousemove', addEvent_forIE);
     canvas[0].attachEvent('onmouseup',   addEvent_forIE);
     canvas[0].attachEvent('onmouseout',  addEvent_forIE);
+    canvas[1].attachEvent('onmousedown', addEvent_forIE);
+    canvas[1].attachEvent('onmousemove', addEvent_forIE);
+    canvas[1].attachEvent('onmouseup',   addEvent_forIE);
+    canvas[1].attachEvent('onmouseout',  addEvent_forIE);
     document.onkeydown      = addEvent_forIE;
   }
   if(document.getElementById("mode_play").addEventListener){
@@ -63,9 +77,13 @@ var procEvent = function(){
       case "mousedown": // mouse down ---------
         isMouseDragged = true;
         mouseDownPos = [x,y];
+        mouseWithShiftKey = e.shiftKey;
+        mouseButton = e.button;
+        mouseTarget = parseInt(e.target.id.substr(-1));
         handleMouseDown();
       break;
       case "mousemove": // dragging ---------
+        mouseTarget = parseInt(e.target.id.substr(-1));
         if(isMouseDragged){
           mousePos = [x,y];
           handleMouseDragging();
@@ -76,11 +94,17 @@ var procEvent = function(){
       break;
       case "mouseup":   // mouse up ---------
       case "mouseout":   // mouse out ---------
+      mouseTarget = parseInt(e.target.id.substr(-1));
       if(isMouseDragged){
         isMouseDragged = false;
         mouseUpPos = [x,y];
         handleMouseUp();
       }
+      break;
+      case "mousewheel":
+      mouseTarget = parseInt(e.target.id.substr(-1));
+      mouseWheel = [e.wheelDeltaX, e.wheelDeltaY];
+      handleMouseWheel();
       break;
       case "keydown":   // mouse up ---------
         handleKeyDown(e);
@@ -97,6 +121,10 @@ var addEvent = function(e){
     eventQueue.push(e);
     lastEvent = e;//for debug
   }
+  if(e.type!="keydown"){
+    if(e.preventDefault) e.preventDefault();
+    e.returnValue = false;
+  }
 };
 // sub routines
 // addEvent(Event e)
@@ -106,6 +134,8 @@ var addEvent_forIE = function(){
   e.x=event.offsetX;
   e.y=event.offsetY;
   e.keyCode = event.keyCode;
+  e.target = event.srcElement;
+  e.button=[-1,0,2,-1,1,-1,-1,-1][event.button];
   addEvent(e);
 };
 
