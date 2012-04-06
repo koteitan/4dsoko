@@ -73,6 +73,17 @@ var selchara = 0; // charactor to put in edit mode
   [ 0, 0,-1, 0, 0, 0,+1, 0], //z
   [ 0, 0, 0,-1, 0, 0, 0,+1], //w
 ];
+//save level --------------------
+var LevelList = function(){
+  this.list = [];
+}
+var levelList;
+var Level = function(_map, _name, _description){
+  this.map = _map;
+  this.name = _name;
+  this.description = _description;
+  this.winnerList = [];
+}
 //ENTRY POINT --------------------------
 window.onload=function(){
   initGui();
@@ -99,7 +110,7 @@ if(document.all){
   frameRate = 60; // [fps]
 }
 var debugout;
-
+var isKeyTyping;
 //initialize -----------
 //gui
 var initGui=function(){
@@ -108,6 +119,7 @@ var initGui=function(){
     if(!canvas[i]||!canvas[i].getContext) return false;
     ctx[i] = canvas[i].getContext('2d');
   }
+  isKeyTyping = false;
 } 
 //game
 var initGame=function(){
@@ -160,6 +172,7 @@ var initGame=function(){
   }
   mode = 0;
   readyPlay();
+  loadLevelList();
 }
 /*-----------------------------------
   draw graphic routine.
@@ -564,7 +577,85 @@ var handleChangeMode = function(newmode){
   isRequestedDraw = true;
 }
 
+// override XMLHttpRequest for IE -----------------------
+if(typeof ActiveXObject == "function" && typeof XMLHttpRequest == "undefined"){
+  XMLHttpRequest = function(){
+    return new ActiveXObject("Microsoft.XMLHTTP")
+  }
+}
+
+var response;
+var req;
+
+var loadLevelList = function(){
+  try {
+    req = new XMLHttpRequest();
+  }catch(e) {
+    req = false;
+  }
+  req.onreadystatechange = function(){
+    if (req.readyState == 4 && req.status == 200) loadLevelList2(req.response);
+    if (req.readyState == 4 && req.status == 404) loadLevelList2("");
+  };
+  req.open("GET", "./server/commonfile");
+  req.setRequestHeader("content-type","application/x-www-form-urlencoded;charset=utf-8");
+  req.send();
+}
 
 
 
-
+var loadLevelList2 = function(str){
+  if(str!=""){
+    levelList = eval("("+str+")");
+    if(levelList==undefined || levelList=="" || levelList.list==undefined){
+      levelList = new LevelList();
+    }
+  }else{
+     levelList = new LevelList();
+  }
+  var htmlout="";
+  htmlout += "<table><tr><th>Command</th><th>Level Name</th><th>Description</th><th>Winners</th>";
+  for(i=0;i<levelList.list.length;i++){
+    htmlout += "<tr><td><input type=button value=load onclick='javascript:loadLevel("+i+");'></td>";
+    htmlout += "<td>"+levelList.list[i].name+"</td><td>"
+    htmlout += "<td>"+levelList.list[i].description+"</td><td>"
+    for(w=0;w<levelList.list[i].winnerList.length;w++){
+      if(w>0) htmlout += ", ";
+      htmlout += levelList.list[i].winnerList[w];
+    }
+    htmlout += "</td></tr>";
+  }
+  htmlout+="<tr><th><input value='add' type=button onclick='javascript:addLevel();'></th>";
+  htmlout+="<th><input type='text' id='newname' size='10' onfocus='javascript:isKeyTyping=true;' onblur='javascript:isKeyTyping=false;'></th>";
+  htmlout+="<th><input type='text' id='newdescription' size='30' onfocus='javascript:isKeyTyping=true;' onblur='javascript:isKeyTyping=false;'></th>";
+  htmlout+="<th></th></tr></table>";
+  document.getElementById("levellistdiv").innerHTML = htmlout;
+}
+var loadLevel = function(i){
+  if(levelList == undefined || levelList.list == undefined) return;
+  map = levelList.list[i].map.clone();
+  if(mode==0) readyPlay();
+  isRequestedDraw();
+}
+var addLevel = function(){
+  if(document.getElementById("newname")=="") return;
+  var level = new Level(map, document.getElementById("newname").value, document.getElementById("newdescription").value);
+  levelList.list.push(level);
+  saveLevelList();
+}
+var saveLevelList=function(){
+  if(levelList==undefined || levelList.list==undefined) return;
+  try {
+    req = new XMLHttpRequest();
+  }catch(e) {
+    req = false;
+  }
+  req.onreadystatechange = function(){
+    if (req.readyState == 4 && req.status == 200){
+//      document.getElementById("debugout").innerHTML="success.<br>"+req.response;
+    }
+  };
+  req.open("POST", "./server/index.cgi");
+  req.setRequestHeader("content-type","application/x-www-form-urlencoded;charset=utf-8");
+  req.send("name=commonfile&data="+(JSON.stringify(levelList)));
+}

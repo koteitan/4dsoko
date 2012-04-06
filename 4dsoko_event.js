@@ -118,8 +118,15 @@ var procEvent = function(){
 // addEvent(Event e)
 var addEvent = function(e){
   if(eventQueue.length < eventsMax && e!=undefined){
-    eventQueue.push(e);
-    lastEvent = e;//for debug
+    if(e.type=="keydown"){
+      if(!isKeyTyping){
+        eventQueue.push(e);
+        lastEvent = e;//for debug
+      }
+    }else{
+      eventQueue.push(e);
+      lastEvent = e;//for debug
+    }
   }
   if(e.type!="keydown"){
     if(e.preventDefault) e.preventDefault();
