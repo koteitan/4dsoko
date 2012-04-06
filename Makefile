@@ -1,8 +1,7 @@
 .PHONY: all clean install
 
-IN = server.cgi
-TMP = tmp
-OUT = index.cgi
+IN = server/server.cgi
+OUT = server/index.cgi
 
 PERL_PATH_DEBUG   = E:/ActivePerl/bin/perl.exe
 PERL_PATH_RELEASE = /usr/bin/perl
@@ -19,7 +18,7 @@ debug:
 	rm tmp2
 	echo "debug=1;" >> tmp
 	cat $(IN) >> tmp
-	mv tmp index.cgi
+	mv tmp $(OUT)
 
 release:
 	echo "#!$(PERL_PATH_RELEASE)" > tmp2
@@ -27,15 +26,15 @@ release:
 	rm tmp2
 	echo "debug=0;" >> tmp
 	cat $(IN) >> tmp
-	mv tmp index.cgi
+	mv tmp $(OUT)
 
 installlocal:
 	cp *.js *.html ~/d/www/4dsoko/
-	cp $(OUT) ~/d/www/4dsoko/server/
+	cp $(OUT) ~/d/www/4dsoko/
 
 installbeta:
-	$(FTP) -s:uploadbeta.ftp
+	$(FTP) -s:server/uploadbeta.ftp
 
 install:
-	$(FTP) -s:upload.ftp
+	$(FTP) -s:server/upload.ftp
 

@@ -613,12 +613,16 @@ var loadLevelList2 = function(str){
   }else{
      levelList = new LevelList();
   }
+  displayLevelList();
+}
+var displayLevelList=function(){
   var htmlout="";
   htmlout += "<table><tr><th>Command</th><th>Level Name</th><th>Description</th><th>Winners</th>";
   for(i=0;i<levelList.list.length;i++){
     htmlout += "<tr><td><input type=button value=load onclick='javascript:loadLevel("+i+");'></td>";
-    htmlout += "<td>"+levelList.list[i].name+"</td><td>"
-    htmlout += "<td>"+levelList.list[i].description+"</td><td>"
+    htmlout += "<td>"+levelList.list[i].name+"</td>";
+    htmlout += "<td>"+levelList.list[i].description+"</td>";
+    htmlout += "<td>";
     for(w=0;w<levelList.list[i].winnerList.length;w++){
       if(w>0) htmlout += ", ";
       htmlout += levelList.list[i].winnerList[w];
@@ -642,6 +646,7 @@ var addLevel = function(){
   var level = new Level(map, document.getElementById("newname").value, document.getElementById("newdescription").value);
   levelList.list.push(level);
   saveLevelList();
+  displayLevelList();
 }
 var saveLevelList=function(){
   if(levelList==undefined || levelList.list==undefined) return;
