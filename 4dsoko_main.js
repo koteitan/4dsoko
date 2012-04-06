@@ -639,7 +639,7 @@ var loadLevel = function(i){
   if(levelList == undefined || levelList.list == undefined) return;
   map = levelList.list[i].map.clone();
   if(mode==0) readyPlay();
-  isRequestedDraw();
+  isRequestedDraw = true;
 }
 var addLevel = function(){
   if(document.getElementById("newname")=="") return;
