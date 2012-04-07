@@ -140,8 +140,12 @@ var loadLevel = function(i){
   level list.
 */
 var addLevel = function(){
-  if(document.getElementById("newname")=="") return;
-  var level = new Level(map, document.getElementById("newname").value, document.getElementById("newdescription").value);
+  var level = new Level(
+    map, 
+    document.getElementById("newname").value,
+    document.getElementById("newauthor").value,
+    document.getElementById("newdescription").value
+  );
   levelList.list.push(level);
   uploadLevelList();
   displayLevelList();
