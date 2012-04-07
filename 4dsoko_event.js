@@ -10,6 +10,7 @@ var eventsMax  = 100;
 var lastEvent;       
 //mouse events
 var isMouseDragged = false;
+var isMouseOver    = false;
 var mouseDownPos = [-1,-1];
 var mousePos     = [-1,-1];
 var mouseUpPos   = [-1,-1];
@@ -88,6 +89,7 @@ var procEvent = function(){
         handleMouseDown();
       break;
       case "mousemove": // dragging ---------
+        isMouseOver = true;
         mouseTarget = parseInt(e.target.id.substr(-1));
         if(isMouseDragged){
           mousePos = [x,y];
@@ -99,6 +101,7 @@ var procEvent = function(){
       break;
       case "mouseup":   // mouse up ---------
       case "mouseout":   // mouse out ---------
+      isMouseOver = false;
       mouseTarget = parseInt(e.target.id.substr(-1));
       if(isMouseDragged){
         isMouseDragged = false;
@@ -107,12 +110,14 @@ var procEvent = function(){
       }
       break;
       case "mousewheel":
-      mouseTarget = parseInt(e.target.id.substr(-1));
-      mouseWheel = [e.wheelDeltaX, e.wheelDeltaY];
-      handleMouseWheel();
+      if(isMouseOver){
+        mouseTarget = parseInt(e.target.id.substr(-1));
+        mouseWheel = [e.wheelDeltaX, e.wheelDeltaY];
+        handleMouseWheel();
+      }
       break;
       case "keydown":   // mouse up ---------
-        handleKeyDown(e);
+      if(!isKeyTyping) handleKeyDown(e);
       break;
       default:
       break;
@@ -123,19 +128,15 @@ var procEvent = function(){
 // addEvent(Event e)
 var addEvent = function(e){
   if(eventQueue.length < eventsMax && e!=undefined){
-    if(e.type=="keydown"){
-      if(!isKeyTyping){
-        eventQueue.push(e);
-        lastEvent = e;//for debug
-      }
-    }else{
-      eventQueue.push(e);
-      lastEvent = e;//for debug
-    }
+    eventQueue.push(e);
+    lastEvent = e;//for debug
   }
-  if(e.type!="keydown"){
-    if(e.preventDefault) e.preventDefault();
-    e.returnValue = false;
+  
+  if(e.type!="keydown" || e.type=="mousewheel"){
+    if(!isKeyTyping && isMouseOver){
+      if(e.preventDefault) e.preventDefault();
+      e.returnValue = false;
+    }
   }
 };
 // sub routines
