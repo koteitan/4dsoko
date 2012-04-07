@@ -33,8 +33,8 @@ installlocal:
 	cp $(OUT) ~/d/www/4dsoko/
 
 installbeta:
-	$(FTP) -s:server/uploadbeta.ftp
+	$(FTP) -s:uploadbeta.ftp
 
 install:
-	$(FTP) -s:server/upload.ftp
+	$(FTP) -s:upload.ftp
 

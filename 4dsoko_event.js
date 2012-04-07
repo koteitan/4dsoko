@@ -1,3 +1,8 @@
+/*----------------------------------
+  4dsoko_event.js
+  GUI event control. queueing the 
+  events and process in serial order.
+----------------------------------*/
 //events ----------------------
 //variables
 var eventQueue = [];  //eventQueue[i] = <MouseEvent>
