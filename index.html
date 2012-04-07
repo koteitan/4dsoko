@@ -17,8 +17,8 @@
   a:link{color:#00FF00;border-style:none;text-decoration:underline}
   a:visited{color:#00FF00;border-style:none;text-decoration:underline}
   a:hover{color:#00FF00;border-color:none;text-decoration:underline}
-  address{text-align:right}
-  td{text-align:center}
+  address{text-align:right;font-style:normal}
+  td{border-color:#00FF00;text-align:center}
   input{border-style:solid;border-color:#00FF00;background-color:#000000;color:#00FF00}
   .tdbutton{border-width:1px;border-style:solid;border-color:white;height:30px;width:30px}
 --></style>
@@ -27,7 +27,7 @@
 <body>
 <div style="vertical-align:top"><img src="logo.png">&nbsp;4 dimensional sokoban like puzzle.</div>
 <br>
-<table style="width:100%"><td style="text-align:right"">
+<table style="width:100%"><td style="text-align:right;vertical-align:center">
   <table align="right" style="font-size:8pt"><caption>Softkey</caption>
   <col span=3 style="width:30px">
   <tr><td></td><td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=false;e.keyCode=87;handleKeyDown(e);">w</td><td>→<br>+x</td></tr>
@@ -39,6 +39,34 @@
   <tr>         <td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=true ;e.keyCode=65;handleKeyDown(e);">A</td>
   <td></td>    <td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=true ;e.keyCode=68;handleKeyDown(e);">D</td></tr>
   <tr><td>↓+w</td><td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=true ;e.keyCode=88;handleKeyDown(e);">X</td><td></td></tr>
+  </table><br clear=right><br>
+  <table align=right><caption>Rotation:</caption>
+    <tr><th>x</th><th>y</th><th>z</th><th>w</th></tr>
+    <tr>
+      <th>x</th>
+      <td></td>
+      <td><input type=button onclick="javascript:rotateLevel(1,0);" value="xy" class="tdbutton"></td>
+      <td><input type=button onclick="javascript:rotateLevel(2,0);" value="xz" class="tdbutton"></td>
+      <td><input type=button onclick="javascript:rotateLevel(3,0);" value="xw" class="tdbutton"></td>
+    </tr><tr>
+      <th>z</th>
+      <td><input type=button onclick="javascript:rotateLevel(0,1);" value="yx" class="tdbutton"></td>
+      <td></td>
+      <td><input type=button onclick="javascript:rotateLevel(2,1);" value="yz" class="tdbutton"></td>
+      <td><input type=button onclick="javascript:rotateLevel(3,1);" value="yw" class="tdbutton"></td>
+    </tr><tr>
+      <th>y</th>
+      <td><input type=button onclick="javascript:rotateLevel(0,2);" value="zx" class="tdbutton"></td>
+      <td><input type=button onclick="javascript:rotateLevel(1,2);" value="zy" class="tdbutton"></td>
+      <td></td>
+      <td><input type=button onclick="javascript:rotateLevel(3,2);" value="zw" class="tdbutton"></td>
+    </tr><tr>
+      <th>w</th>
+      <td><input type=button onclick="javascript:rotateLevel(0,3);" value="wx" class="tdbutton"></td>
+      <td><input type=button onclick="javascript:rotateLevel(1,3);" value="wy" class="tdbutton"></td>
+      <td><input type=button onclick="javascript:rotateLevel(2,3);" value="wz" class="tdbutton"></td>
+      <td></td>
+    </tr>
   </table>
 </td><td style="text-align:left">
 <canvas align="left" id="canvas1" width="256" height="16" style="background-color:black;border-width:1px;border-style:solid;border-color:#00FF00"></canvas><br>
@@ -72,15 +100,17 @@
   <br>
   <br>
   <address>
-  <a href="about.html">about this game</a>
-  </address>
-  <address>
   version <span id="versiondisplay"></span><br>
   <script type="text/javascript" src="./4dsoko_version.js"></script>
   programed by <a href="http://twitter.com/#!/koteitan">koteitan</a><br>
   source code is at <a href="https://github.com/koteitan/4dsoko">github</a><br>
   </address>
 </td></tr></table>
+<ul>
+  <li>Tutorial of 4-dimension <a href="tutorials/">[English]</a> <a href="tutorials/ja.html">[Japanese]</a></li>
+  <li><a href="about.html">about this game</a></li>
+</ul>
+</address>
 <div id="levellistdiv">
 </div>
 </body>

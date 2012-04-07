@@ -556,7 +556,7 @@ window.onresize = function(){
     document.getElementById("keydescription").innerHTML="";
   }else{
     document.getElementById("canvas0").width  = [document.documentElement.clientWidth-400, 320].max();
-    document.getElementById("canvas0").height = [(document.documentElement.clientHeight-200)*0.9, 180].max();
+    document.getElementById("canvas0").height = [(document.documentElement.clientHeight-300)*0.9, 180].max();
     document.getElementById("canvas1").width  = document.getElementById("canvas0").width;
   }
   isRequestedDraw = true;
@@ -564,9 +564,26 @@ window.onresize = function(){
 
 var handleChangeMode = function(newmode){
   mode = newmode;
-  if(mode==0){
-    readyPlay();
-  }
+  if(mode==0) readyPlay();
   isRequestedDraw = true;
 }
+var rotateLevel =function(d0,d1){
+  var map0 = map.clone();
+  var di0 = [0,1,2,3];
+  var di1 = [0,1,2,3];
+  var d = new Array(4);
+  var tmp = di1[d0];
+  di1[d0] = di1[d1];
+  di1[d1] = tmp;
+  for(d[0]=0;d[0]<mmax;d[0]++){
+  for(d[1]=0;d[1]<mmax;d[1]++){
+  for(d[2]=0;d[2]<mmax;d[2]++){
+  for(d[3]=0;d[3]<mmax;d[3]++){
+    map[d[di1[0]]][d[di1[1]]][d[di1[2]]][d[di1[3]]] = map0[d[di0[0]]][d[di0[1]]][d[di0[2]]][d[di0[3]]];
+  }}}}
+  if(mode==0) readyPlay();
+  isRequestedDraw = true;
+}
+
+
 

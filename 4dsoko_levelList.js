@@ -39,7 +39,7 @@ var initLevelList = function(){
 ------------------------------------------------------------------*/
 /* downloadLevelList() ---------------
    download level list from server.
-   output: call loadLevelList2(json string).
+   output: call back.
 */
 var downloadLevelList = function(callback){
   try {
@@ -68,7 +68,11 @@ var downloadLevelList = function(callback){
   };
   req.open("GET", "./server/commonfile");
   req.setRequestHeader("content-type","application/x-www-form-urlencoded;charset=utf-8");
-  req.send();
+  try{
+    req.send();
+  }catch(e){
+    var aaa=1;
+  }
 }
 /* displayLevelList --------------------
   display current level list.
@@ -104,6 +108,7 @@ var displayLevelList=function(){
   to server.
 */
 var uploadLevelList=function(){
+  downloadLevelList();
   if(levelList==undefined || levelList.list==undefined) return;
   try {
     req = new XMLHttpRequest();
@@ -140,6 +145,9 @@ var loadLevel = function(i){
   level list.
 */
 var addLevel = function(){
+  downloadLevelList(addLevel2); // check others update.
+}
+var addLevel2 = function(){
   var level = new Level(
     map, 
     document.getElementById("newname").value,
@@ -156,7 +164,13 @@ var addLevel = function(){
   server, and display the current
   level list.
 */
+var iDeletedLevel;
 var deleteLevel = function(i){
+  iDeletedLevel = i;
+  downloadLevelList(deleteLevel2); // check others update.
+}
+var deleteLevel2 = function(){
+  var i=iDeletedLevel;
   if(levelList == undefined || levelList.list == undefined) return;
   if(window.confirm("delete No."+i+" (name="+levelList.list[i].name+") ?")){
     levelList.list.splice(i,1);
