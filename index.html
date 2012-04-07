@@ -10,6 +10,7 @@
 <script type="text/javascript" src="./exmath.js"></script>
 <script type="text/javascript" src="./4dsoko_main.js"></script>
 <script type="text/javascript" src="./4dsoko_event.js"></script>
+<script type="text/javascript" src="./4dsoko_levelList.js"></script>
 <style><!--
   body{font-family:Arial; color:#00FF00; background-color:black}  
   a{color:#00FF00;border-style:none;text-decoration:underline}
@@ -45,33 +46,42 @@
 <form id="modeform">
 <input type=radio name="mode" id="mode_play" value="play" checked>play
 <input type=radio name="mode" id="mode_edit" value="edit">edit</form>
+<br>
+<br>
+<br>
 <div id="debugout"></div>
-</td><td style="text-align:center" id="keydescription">
-<span style="font-size:8pt">Key Assign:</span><br>
-  <table style="font-size:8pt;width:100%"><caption>to play</caption>
-  <tr><th>key</th><th>function</th></tr>
-  <tr><td>awdx</td><td>move in (x,y).</td></tr>
-  <tr><td>AWDX</td><td>move in (z,w).</td></tr>
-  </table>
+</td><td style="text-align:center">
+  <div id="keydescription">
+    <span style="font-size:8pt">Key Assign:</span><br>
+    <table style="font-size:8pt;width:100%"><caption>to play</caption>
+    <tr><th>key</th><th>function</th></tr>
+    <tr><td>awdx</td><td>move in (x,y).</td></tr>
+    <tr><td>AWDX</td><td>move in (z,w).</td></tr>
+    </table>
+    <br>
+    <table style="font-size:8pt;width:100%"><caption>to edit</caption>
+    <tr><th>key</th><th>function</th></tr>
+    <tr><td>awdx</td><td>move cursor.</td></tr>
+    <tr><td>q/e</td><td>change charactor.</td></tr>
+    <tr><td>[enter]<br>/mouse</td><td>put charactor.</td></tr>
+    <tr><td>shift +<br> mouse</td><td>put multiple charactors.</td></tr>
+    <tr><td>wheel</td><td>scroll.</td></tr>
+    </table>
+  </div>
   <br>
-  <table style="font-size:8pt;width:100%"><caption>to edit</caption>
-  <tr><th>key</th><th>function</th></tr>
-  <tr><td>awdx</td><td>move cursor.</td></tr>
-  <tr><td>q/e</td><td>change charactor.</td></tr>
-  <tr><td>[enter]<br>/mouse</td><td>put charactor.</td></tr>
-  <tr><td>shift +<br> mouse</td><td>put multiple charactors.</td></tr>
-  <tr><td>wheel</td><td>scroll.</td></tr>
-  </table>
+  <br>
+  <br>
+  <address>
+  <a href="about.html">about this game</a>
+  </address>
+  <address>
+  version <span id="versiondisplay"></span><br>
+  <script type="text/javascript" src="./4dsoko_version.js"></script>
+  programed by <a href="http://twitter.com/#!/koteitan">koteitan</a><br>
+  source code is at <a href="https://github.com/koteitan/4dsoko">github</a><br>
+  </address>
 </td></tr></table>
 <div id="levellistdiv">
 </div>
-<address>
-<a href="about.html">about this game</a>
-</address>
-<address>
-version 1.5<br>
-programed by <a href="http://twitter.com/#!/koteitan">koteitan</a><br>
-source code is at <a href="https://github.com/koteitan/4dsoko">github</a><br>
-</address>
 </body>
 </html>
