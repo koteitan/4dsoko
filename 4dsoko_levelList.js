@@ -79,8 +79,8 @@ var downloadLevelList = function(callback){
 */
 var displayLevelList=function(){
   var htmlout="";
-  htmlout += "<table border=1 style='border-style:solid;border-color:#00FF00;border-collapse:collapse'><caption>Posted level list <small>(Please post your edit!)</small></caption>";
-  htmlout += "<tr><th>Command</th><th>Title</th><th>Author</th><th>Description</th><th>Winners</th>";
+  htmlout += "<table width='90%' border=1 style='border-style:solid;border-color:#00FF00;border-collapse:collapse'><caption>Posted level list <small>(Please post your edit!)</small></caption>";
+  htmlout += "<tr><th>Command</th><th>Title</th><th>Author</th><th>Description</th><th>Winners</th><th>delete</th>";
   for(i=0;i<levelList.list.length;i++){
     htmlout += "<tr><td><input type=button value=load onclick='javascript:loadLevel("+i+");'></td>";
     htmlout += "<td>"+((levelList.list[i].name!=undefined&&levelList.list[i].name!="")?
@@ -94,12 +94,12 @@ var displayLevelList=function(){
       if(w>0) htmlout += ", ";
       htmlout += levelList.list[i].winnerList[w];
     }
-    htmlout += "</td></tr>";
+    htmlout += "</td><td><input type=button value=delete onclick='javascript:deleteLevel("+i+")'></td></tr>";
   }
   htmlout+="<tr><th><input value='add your edit' type=button onclick='javascript:addLevel();'></th>";
   htmlout+="<th><input type='text' id='newname' size='10' onfocus='javascript:isKeyTyping=true;' onblur='javascript:isKeyTyping=false;'></th>";
   htmlout+="<th><input type='text' id='newauthor' size='10' onfocus='javascript:isKeyTyping=true;' onblur='javascript:isKeyTyping=false;'></th>";
-  htmlout+="<th><input type='text' id='newdescription' size='100%' onfocus='javascript:isKeyTyping=true;' onblur='javascript:isKeyTyping=false;'></th>";
+  htmlout+="<th><input type='text' id='newdescription' style='width:100%' onfocus='javascript:isKeyTyping=true;' onblur='javascript:isKeyTyping=false;'></th>";
   htmlout+="<th></th></tr></table>";
   document.getElementById("levellistdiv").innerHTML = htmlout;
 }
