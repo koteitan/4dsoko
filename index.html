@@ -19,8 +19,10 @@
   a:hover{color:#00FF00;border-color:none;text-decoration:underline}
   address{text-align:right;font-style:normal}
   td{border-color:#00FF00;text-align:center}
+  th{border-color:#00FF00;text-align:center}
   input{border-style:solid;border-color:#00FF00;background-color:#000000;color:#00FF00}
   .tdbutton{border-width:1px;border-style:solid;border-color:white;height:30px;width:30px}
+  hr{border-style:solid}
 --></style>
 <title>4Dsoko</title>
 </head>
@@ -40,7 +42,7 @@
   <td></td>    <td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=true ;e.keyCode=68;handleKeyDown(e);">D</td></tr>
   <tr><td>↓+w</td><td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=true ;e.keyCode=88;handleKeyDown(e);">X</td><td></td></tr>
   </table><br clear=right><br>
-  <table align=right><caption>Coodinate Rotation:</caption>
+  <table align=right><caption>Coordinate Rotation:</caption>
     <tr><th>x</th><th>y</th><th>z</th><th>w</th></tr>
     <tr>
       <th>x</th>
@@ -73,7 +75,9 @@
 <canvas align="left" id="canvas0" width="256" height="256" style="background-color:black;border-width:1px;border-style:solid;border-color:#00FF00"></canvas><br>
 <form id="modeform">
 <input type=radio name="mode" id="mode_play" value="play" checked>play
-<input type=radio name="mode" id="mode_edit" value="edit">edit</form>
+<input type=radio name="mode" id="mode_edit" value="edit">edit
+<div id="nameentrydiv"></div>
+</form>
 <br>
 <br>
 <br>
@@ -99,12 +103,6 @@
   <br>
   <br>
   <br>
-  <address>
-  version <span id="versiondisplay"></span><br>
-  <script type="text/javascript" src="./4dsoko_version.js"></script>
-  programed by <a href="http://twitter.com/#!/koteitan">koteitan</a><br>
-  source code is at <a href="https://github.com/koteitan/4dsoko">github</a><br>
-  </address>
 </td></tr></table>
 <ul>
   <li>Tutorial of 4-dimension <a href="tutorials/">[English]</a> <a href="tutorials/ja.html">[Japanese]</a></li>
@@ -113,5 +111,14 @@
 </address>
 <div id="levellistdiv">
 </div>
+<br><br><br><br><br>
+<hr>
+  <address>
+  4Dsoko
+  version <span id="versiondisplay"></span><br>
+  <script type="text/javascript" src="./4dsoko_version.js"></script>
+  programed by <a href="http://twitter.com/#!/koteitan">koteitan</a><br>
+  source code is at <a href="https://github.com/koteitan/4dsoko">github</a><br>
+  </address>
 </body>
 </html>

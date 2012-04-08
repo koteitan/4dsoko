@@ -77,6 +77,8 @@ var selchara = 0; // charactor to put in edit mode
   [ 0, 0,-1, 0, 0, 0,+1, 0], //z
   [ 0, 0, 0,-1, 0, 0, 0,+1], //w
 ];
+var leftTask=0; // number of left box (or goal)
+var gameState=0; // game state.0=unsolved / 1=solved and entering name / 2=entered
 //ENTRY POINT --------------------------
 window.onload=function(){
   initGui();
@@ -244,22 +246,37 @@ var procDraw=function(){
 var readyPlay=function(){
   //find player
   var isPlayerFound = false;
+  var b=0;
+  var g=0;
   for(var w=0;w<mmax;w++){ for(var z=0;z<mmax;z++){ for(var y=0;y<mmax;y++){ for(var x=0;x<mmax;x++){
-    if(map[w][z][y][x]==SokoObj.Player || map[w][z][y][x]==SokoObj.GoalPlayer){
-      if(isPlayerFound){
-        map[w][z][y][x] -= SokoObj.Player; //kill pseudo player
-      }else{
-        playPos = [x,y,z,w];
-        isPlayerFound = true;
-      }
-    }
+    switch(map[w][z][y][x]){
+      case SokoObj.Player:
+      case SokoObj.GoalPlayer:
+        if(isPlayerFound){
+          map[w][z][y][x] -= SokoObj.Player; //kill pseudo player
+        }else{
+          playPos = [x,y,z,w];
+          isPlayerFound = true;
+        }
+      break;
+      case SokoObj.Box:
+        b++;
+      break;
+      case SokoObj.Goal:
+        g++;
+      break;
+      default:
+      break;
+    }//switch
   } } } }
   if(!isPlayerFound){
     map[mmax/2][mmax/2][mmax/2][mmax/2]=SokoObj.Player;
     playPos=[mmax/2,mmax/2,mmax/2,mmax/2];
   }
+  leftTask = [b,g].min();// reset task
   camPos = playPos.clone();
   isRequestedDraw = true;
+  setGameState(0);
 }
 /*-----------------------------------
   movePlayer 
@@ -301,13 +318,27 @@ var movePlayer=function(motion){
         map[newPos [3]][newPos [2]][newPos [1]][newPos [0]] = newPosObj  + SokoObj.Player - SokoObj.Box;
         map[newPos2[3]][newPos2[2]][newPos2[1]][newPos2[0]] = newPosObj2                  + SokoObj.Box;
         playPos = newPos.clone();
+        if(newPosObj==SokoObj.GoalBox                        ) leftTask++;
+        if(newPosObj==SokoObj.Box && newPosObj2==SokoObj.Goal) leftTask--;
       }
     break;
   }
   camPos  = playPos.clone();
   isRequestedDraw = true;
+  if(leftTask==0) setGameState(1);
 }
 
+/*----------------------------------------
+ entryName
+----------------------------------------*/
+var entryName=function(){
+  var name = document.getElementById('nameentrytext').value;
+  if(name != ""){
+    winnerName = name;
+    addWinner();
+    setGameState(2); // inclement game state
+  }
+}
 /*-----------------------------------
   moveCursor
   change position of cursor 
@@ -561,10 +592,19 @@ window.onresize = function(){
   }
   isRequestedDraw = true;
 };
-
 var handleChangeMode = function(newmode){
   mode = newmode;
-  if(mode==0) readyPlay();
+  switch(mode){
+    case 0://play
+      readyPlay();
+    break;
+    case 1://edit
+      curLevelIndex = -1; //reset
+      setGameState(0);
+    break;
+    default:
+    break;
+  }
   isRequestedDraw = true;
 }
 var rotateLevel =function(d0,d1){
@@ -579,11 +619,34 @@ var rotateLevel =function(d0,d1){
   for(d[1]=0;d[1]<mmax;d[1]++){
   for(d[2]=0;d[2]<mmax;d[2]++){
   for(d[3]=0;d[3]<mmax;d[3]++){
-    map[d[di1[0]]][d[di1[1]]][d[di1[2]]][d[di1[3]]] = map0[d[di0[0]]][d[di0[1]]][d[di0[2]]][d[di0[3]]];
+    map[d[di1[3]]][d[di1[2]]][d[di1[1]]][d[di1[0]]] = map0[d[di0[3]]][d[di0[2]]][d[di0[1]]][d[di0[0]]];
   }}}}
   if(mode==0) readyPlay();
   isRequestedDraw = true;
 }
-
+var setGameState=function(state){
+  switch(state){
+    case 0: // unsolved
+      document.getElementById('nameentrydiv').innerHTML = "";
+      gameState = state;
+    break;
+    case 1:
+      if(curLevelIndex>=0){
+        document.getElementById('nameentrydiv').innerHTML
+          = "Yes oh my gosh! Congratulations and please enter name here! -&gt; <input id='nameentrytext' type=text size=10 onfocus='javascript:isKeyTyping=true;' onblur='javascript:isKeyTyping=false;'><input id='nameentrybutton' type=button onclick='javascript:entryName();' value='OK'>";
+      }else{
+      document.getElementById('nameentrydiv').innerHTML
+        = "Congratulations! please try the level below!";
+      }
+      gameState = state;
+    break;
+    case 2:
+      document.getElementById('nameentrydiv').innerHTML = "thank you!";
+      gameState = state;
+    break;
+    default:
+    break;
+  }
+}
 
 

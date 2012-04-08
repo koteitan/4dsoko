@@ -50,18 +50,18 @@ var initEvent=function(){
   }
   if(document.getElementById("mode_play").addEventListener){
     document.getElementById("mode_play").addEventListener("click", function(){
-      handleChangeMode(document.getElementById("modeform").mode[1].checked);
+      handleChangeMode(document.getElementById("modeform").mode[0].checked?0:1);
     });
     document.getElementById("mode_edit").addEventListener("click", function(){
-      handleChangeMode(document.getElementById("modeform").mode[1].checked);
+      handleChangeMode(document.getElementById("modeform").mode[0].checked?0:1);
     });
   }else{
     //IE
     document.getElementById("mode_play").attachEvent("onclick", function(){
-      handleChangeMode(document.getElementById("modeform").mode[1].checked);
+      handleChangeMode(document.getElementById("modeform").mode[0].checked?0:1);
     });
     document.getElementById("mode_edit").attachEvent("onclick", function(){
-      handleChangeMode(document.getElementById("modeform").mode[1].checked);
+      handleChangeMode(document.getElementById("modeform").mode[0].checked?0:1);
     });
   }
   window.onresize();
