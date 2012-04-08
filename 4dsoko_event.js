@@ -72,9 +72,14 @@ var procEvent = function(){
     var e = eventQueue.shift(); // <MouseEvent>
     var x,y;
     if(!document.all){
-      var rect = e.target.getBoundingClientRect();
-      x = e.x-rect.left;
-      y = e.y-rect.top ;
+      if(e.target.getBoundingClientRect){
+        var rect = e.target.getBoundingClientRect();
+        x = e.x-rect.left;
+        y = e.y-rect.top ;
+      }else{
+        x = e.x;
+        y = e.y;
+      }
     }else{
       x = e.x;
       y = e.y;

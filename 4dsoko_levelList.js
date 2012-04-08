@@ -32,6 +32,7 @@ if(typeof ActiveXObject == "function" && typeof XMLHttpRequest == "undefined"){
 }
 // initialize --------------
 var initLevelList = function(){
+  displayLevelListWait();
   downloadLevelList(displayLevelList);
 }
 /* -----------------------------------------------------------------
@@ -74,15 +75,19 @@ var downloadLevelList = function(callback){
     var aaa=1;
   }
 }
+var displayLevelListWait=function(){
+  document.getElementById("levellistdiv").innerHTML = "<center>Please wait a moment...</center>";
+}
 /* displayLevelList --------------------
   display current level list.
 */
 var displayLevelList=function(){
   var htmlout="";
-  htmlout += "<table border=1 style='border-style:solid;border-color:#00FF00;border-collapse:collapse'><caption>Posted level list <small>(Please post your edit!)</small></caption>";
-  htmlout += "<tr><th>Command</th><th>Title</th><th>Author</th><th>Description</th><th>Winners</th>";
+  htmlout += "<table width='90%' border=1 style='border-style:solid;border-color:#00FF00;border-collapse:collapse'><caption>Posted level list <small>(Please post your edit!)</small></caption>";
+  htmlout += "<tr><th>Command</th><th>#</th><th>Title</th><th>Author</th><th>Description</th><th>Winners</th><th>delete</th>";
+  var i=0;
   for(i=0;i<levelList.list.length;i++){
-    htmlout += "<tr><td><input type=button value=load onclick='javascript:loadLevel("+i+");'></td>";
+    htmlout += "<tr><td><input type=button value=load onclick='javascript:loadLevel("+i+");'></td><td>"+i+"</td>";
     htmlout += "<td>"+((levelList.list[i].name!=undefined&&levelList.list[i].name!="")?
       levelList.list[i].name:"(no name)")+"</td>";
     htmlout += "<td>"+((levelList.list[i].author!=undefined&&levelList.list[i].author!="")?
@@ -94,20 +99,20 @@ var displayLevelList=function(){
       if(w>0) htmlout += ", ";
       htmlout += levelList.list[i].winnerList[w];
     }
-    htmlout += "</td></tr>";
+    htmlout += "</td><td><input type=button value=delete onclick='javascript:deleteLevel("+i+")'></td></tr>";
   }
-  htmlout+="<tr><th><input value='add your edit' type=button onclick='javascript:addLevel();'></th>";
-  htmlout+="<th><input type='text' id='newname' size='10' onfocus='javascript:isKeyTyping=true;' onblur='javascript:isKeyTyping=false;'></th>";
-  htmlout+="<th><input type='text' id='newauthor' size='10' onfocus='javascript:isKeyTyping=true;' onblur='javascript:isKeyTyping=false;'></th>";
-  htmlout+="<th><input type='text' id='newdescription' size='100%' onfocus='javascript:isKeyTyping=true;' onblur='javascript:isKeyTyping=false;'></th>";
-  htmlout+="<th></th></tr></table>";
+  htmlout+="<tr><td><input value='add your edit' type=button onclick='javascript:addLevel();'></td><td>("+i+")</td>";
+  htmlout+="<td><input type='text' id='newname' size='10' onfocus='javascript:isKeyTyping=true;' onblur='javascript:isKeyTyping=false;'></td>";
+  htmlout+="<td><input type='text' id='newauthor' size='10' onfocus='javascript:isKeyTyping=true;' onblur='javascript:isKeyTyping=false;'></td>";
+  htmlout+="<td><input type='text' id='newdescription' style='width:90%' onfocus='javascript:isKeyTyping=true;' onblur='javascript:isKeyTyping=false;'></td>";
+  htmlout+="<td>&nbsp;</td><td>&nbsp;</td></tr></table>";
   document.getElementById("levellistdiv").innerHTML = htmlout;
 }
 /* uploadLevelList() --------------------
   upload the current level list
   to server.
 */
-var uploadLevelList=function(){
+var uploadLevelList=function(callback){
   downloadLevelList();
   if(levelList==undefined || levelList.list==undefined) return;
   try {
@@ -116,8 +121,10 @@ var uploadLevelList=function(){
     req = false;
   }
   req.onreadystatechange = function(){
-    if (req.readyState == 4 && req.status == 200){
-//      document.getElementById("debugout").innerHTML="success.<br>"+req.response;
+    if (req.readyState == 4){
+      if(req.status == 200){
+        if(callback) callback();
+      }
     }
   };
   req.open("POST", "./server/index.cgi");
@@ -156,8 +163,8 @@ var addLevel2 = function(){
     document.getElementById("newdescription").value
   );
   levelList.list.push(level);
-  uploadLevelList();
-  displayLevelList();
+  displayLevelListWait();
+  uploadLevelList(displayLevelList);
 }
 /* deleteLevel(i) --------------------
   add the current level into the
@@ -175,8 +182,8 @@ var deleteLevel2 = function(){
   if(levelList == undefined || levelList.list == undefined) return;
   if(window.confirm("delete No."+i+" (name="+levelList.list[i].name+") ?")){
     levelList.list.splice(i,1);
-    uploadLevelList();
-    displayLevelList();
+    displayLevelListWait();
+    uploadLevelList(displayLevelList);
   }
 }
 var winnerName = "";
@@ -186,8 +193,8 @@ var addWinner = function(){
 var addWinner = function(){
   if(levelList == undefined || levelList.list == undefined) return;
   levelList.list[curLevelIndex].winnerList.push(winnerName);
-  uploadLevelList();
-  displayLevelList();
+  displayLevelListWait();
+  uploadLevelList(displayLevelList);
 }
 
 
