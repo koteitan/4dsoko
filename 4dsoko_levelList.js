@@ -157,7 +157,7 @@ var addLevel = function(){
 }
 var addLevel2 = function(){
   var level = new Level(
-    map, 
+    map.clone(), 
     document.getElementById("newname").value,
     document.getElementById("newauthor").value,
     document.getElementById("newdescription").value
