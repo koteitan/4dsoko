@@ -3,54 +3,45 @@
   main program and entry point
 ----------------------------------*/
 // static var on game
-var isDebug1=1; //debug flag
-var isDebug2=0; //debug flag
+var isDebug1=false; //debug flag
+var isDebug2=false; //debug flag
 var mmax = 8; //length of edge of the world (common for dimensions)
 var SokoObj = function(){};
-SokoObj.charaLen = 10;
+SokoObj.charaLen   = 8; //[pixel]
 SokoObj.Blank      = 0;
-SokoObj.Box        = 1;
-SokoObj.Player     = 2;
-SokoObj.Goal       = 3;
-SokoObj.GoalBox    = 4;
-SokoObj.GoalPlayer = 5;
-SokoObj.Wall       = 6;
-SokoObj.charactors = 7;
-SokoObj.toString = ['blank','box','player','goal','G+box','G+player','wall'];
+SokoObj.Player1    = 1;
+SokoObj.Player2    = 2;
+SokoObj.Player1Wall= 3;
+SokoObj.Player2Wall= 4;
+SokoObj.Wall       = 5;
+SokoObj.charactors = 6;
+SokoObj.toString = ['blank','player0','player1','wall player1','wall player2'];
 SokoObj.draw = new Array(SokoObj.charactors);
 // blank -------
 SokoObj.draw[SokoObj.Blank] = function(ctx,x,y){};
-  // box -------
-SokoObj.draw[SokoObj.Box] = function(ctx,x,y){
-  ctx.fillStyle = 'rgb(128,128,255)'; //magenta
+// player 1-------
+SokoObj.draw[SokoObj.Player1] = function(ctx,x,y){
+  ctx.fillStyle = 'rgb(128,255,128)'; //green
   ctx.fillRect(x, y, SokoObj.charaLen, SokoObj.charaLen);
 };
-// player -------
-SokoObj.draw[SokoObj.Player] = function(ctx,x,y){
+// player 2-------
+SokoObj.draw[SokoObj.Player2] = function(ctx,x,y){
+  ctx.fillStyle = 'rgb(128,128,255)'; //brue
+  ctx.fillRect(x, y, SokoObj.charaLen, SokoObj.charaLen);
+};
+// player 1 wall-------
+SokoObj.draw[SokoObj.Player1Wall] = function(ctx,x,y){
   ctx.fillStyle = 'rgb(0,255,0)'; //green
   ctx.fillRect(x, y, SokoObj.charaLen, SokoObj.charaLen);
 };
-// goal -------
-SokoObj.draw[SokoObj.Goal] = function(ctx,x,y){
-  ctx.strokeStyle = 'rgb(0,0,0)'; //black
-  ctx.fillStyle = 'rgb(255,255,0)'; //orange
-  ctx.beginPath();
-  ctx.arc(x+SokoObj.charaLen/2, y+SokoObj.charaLen/2, SokoObj.charaLen/2*0.5, 0, Math.PI*2, false);
-  ctx.fill();
-};
-// box on goal -------
-SokoObj.draw[SokoObj.GoalBox] = function(ctx,x,y){
-  SokoObj.draw[SokoObj.Box](ctx,x,y);
-  SokoObj.draw[SokoObj.Goal](ctx,x,y);
-};
-// player on goal -------
-SokoObj.draw[SokoObj.GoalPlayer] = function(ctx,x,y){
-  SokoObj.draw[SokoObj.Player](ctx,x,y);
-  SokoObj.draw[SokoObj.Goal](ctx,x,y);
+// player 2 wall-------
+SokoObj.draw[SokoObj.Player2Wall] = function(ctx,x,y){
+  ctx.fillStyle = 'rgb(0,0,255)'; //brue
+  ctx.fillRect(x, y, SokoObj.charaLen, SokoObj.charaLen);
 };
 // wall -------
 SokoObj.draw[SokoObj.Wall] = function(ctx,x,y){
-  ctx.fillStyle = 'rgb(255,0,0)'; //red
+  ctx.fillStyle = 'rgb(128,128,128)'; //red
   ctx.fillRect(x, y, SokoObj.charaLen, SokoObj.charaLen);
 }
 SokoObj.draw2 = SokoObj.draw.clone();
@@ -59,26 +50,33 @@ SokoObj.draw2[SokoObj.Blank] = function(ctx,x,y){
   ctx.fillRect(x, y, SokoObj.charaLen, SokoObj.charaLen);
 };
 // dinamic var on game
+var timenow=0;
 var mode=0; /* 0:play mode. 1:edit mode.*/
 var map;       //4 dimensional map: map[w][z][y][x]=SokoObj.o obj index
 var camPos = [mmax/2, mmax/2, mmax/2, mmax/2]; // camera position (0123:xyzw)
-var playPos = camPos.clone(); // player position 0123:xyzw
+var playPos = new Array(); // player position 0123:xyzw
 var curPos    = camPos.clone(); // cursor position (0123:xyzw)
 var curPosEnd = curPos.clone(); // cursor end position (0123:xyzw)
 var camLen = 8; // length of field of view which is displayed (x,y common)
 var selchara = 0; // charactor to put in edit mode
-/* motiondiff[dim][key] 
+/* motiondiff[key][dim] 
   = amount of change of position in [dim]'s dimension 
   when the key is [key] pushed.*/
   var motiondiff = [
-  //a  w  A  W  d  x  D  X
-  [-1, 0, 0, 0,+1, 0, 0, 0], //x
-  [ 0,-1, 0, 0, 0,+1, 0, 0], //y
-  [ 0, 0,-1, 0, 0, 0,+1, 0], //z
-  [ 0, 0, 0,-1, 0, 0, 0,+1], //w
+  //x  y  z  w
+  [-1, 0, 0, 0],// a
+  [ 0,-1, 0, 0],// w
+  [ 0, 0,-1, 0],// A
+  [ 0, 0, 0,-1],// W
+  [+1, 0, 0, 0],// d
+  [ 0,+1, 0, 0],// x
+  [ 0, 0,+1, 0],// D
+  [ 0, 0, 0,+1],// X
 ];
+var inertia=[[+1,0,0,0],[-1,0,0,0]];
+var comInertia = 0.2;
 var leftTask=0; // number of left box (or goal)
-var gameState=0; // game state.0=unsolved / 1=solved and entering name / 2=entered
+gameState=2; // game state.0=playing / 1=solved and entering name / 2=stopped
 //ENTRY POINT --------------------------
 window.onload=function(){
   initGui();
@@ -92,6 +90,15 @@ var procAll=function(){
     procDraw();
     isRequestedDraw = false;
   }
+
+  timenow += 1000/frameRate;
+  if(timenow>=1000/motionRate){
+    if(gameState==0){
+      procCom();
+      procPhysics();
+    }
+    timenow -= 1000/motionRate;
+  }
   procEvent();
 }
 //var for gui ----------------------------
@@ -100,10 +107,11 @@ var ctx    = new Array(2);
 var isRequestedDraw = true;
 var frameRate;
 if(document.all){
-  frameRate =  1; // [fps]
+  frameRate = 2; // [fps]
 }else{
-  frameRate = 60; // [fps]
+  frameRate  = 60; // [fps]
 }
+var motionRate = 2; // [fps]
 var debugout;
 var isKeyTyping;
 //initialize -----------
@@ -132,42 +140,29 @@ var initGame=function(){
       }
     }
   }
-  if(isDebug1){
-    //make sample level
-    var m=mmax-1;
-    for(var z=0;z<mmax;z++){
-    for(var y=0;y<mmax;y++){
-    for(var x=0;x<mmax;x++){
-      map[0][z][y][x]=SokoObj.Wall;
-      map[m][z][y][x]=SokoObj.Wall;
-      map[z][0][y][x]=SokoObj.Wall;
-      map[z][m][y][x]=SokoObj.Wall;
-      map[z][y][0][x]=SokoObj.Wall;
-      map[z][y][m][x]=SokoObj.Wall;
-      map[z][y][x][0]=SokoObj.Wall;
-      map[z][y][x][m]=SokoObj.Wall;
-    }
-    }
-    }
+  //make sample level
+  var m=mmax-1;
+  for(var z=0;z<mmax;z++){
+  for(var y=0;y<mmax;y++){
+  for(var x=0;x<mmax;x++){
+    map[0][z][y][x]=SokoObj.Wall;
+    map[m][z][y][x]=SokoObj.Wall;
+    map[z][0][y][x]=SokoObj.Wall;
+    map[z][m][y][x]=SokoObj.Wall;
+    map[z][y][0][x]=SokoObj.Wall;
+    map[z][y][m][x]=SokoObj.Wall;
+    map[z][y][x][0]=SokoObj.Wall;
+    map[z][y][x][m]=SokoObj.Wall;
   }
-  map[2][2][mmax/2][mmax/2]=SokoObj.Player;
-  map[2][2][mmax/2-1][mmax/2-1]=SokoObj.Box;
-  map[2][2][mmax/2+1][mmax/2+1]=SokoObj.Goal;
-  map[5][2][mmax/2-1][mmax/2-1]=SokoObj.Box;
-  map[5][2][mmax/2-1][mmax/2-2]=SokoObj.Wall;
-  map[5][2][mmax/2-2][mmax/2-1]=SokoObj.Wall;
-  map[5][2][mmax/2-2][mmax/2-2]=SokoObj.Wall;
-  map[5][2][mmax/2+1][mmax/2+1]=SokoObj.Goal;
-  map[mmax-3][mmax-3][mmax/2][mmax/2]=SokoObj.Box;
-  map[mmax/2][mmax/2][mmax/2][mmax/2]=SokoObj.Goal;
-  if(isDebug2){
-    debugout = document.getElementById("debugout");
-    debugout.innerHTML = "debug:";
-    debugout.style.borderStyle = "SokoObj.id";
   }
+  }
+  map[1][1][1][1]=SokoObj.Player1;
+  map[mmax-2][mmax-2][mmax-2][mmax-2]=SokoObj.Player2;
   mode = 0;
   readyPlay();
-  initLevelList();
+//  initLevelList();
+  timenow=0;
+  inertia=[[+1,0,0,0],[-1,0,0,0]];
 }
 /*-----------------------------------
   draw graphic routine.
@@ -245,89 +240,114 @@ var procDraw=function(){
 -----------------------------------*/
 var readyPlay=function(){
   //find player
-  var isPlayerFound = false;
+  var isPlayer1Found = false;
+  var isPlayer2Found = false;
   var b=0;
   var g=0;
   for(var w=0;w<mmax;w++){ for(var z=0;z<mmax;z++){ for(var y=0;y<mmax;y++){ for(var x=0;x<mmax;x++){
     switch(map[w][z][y][x]){
-      case SokoObj.Player:
-      case SokoObj.GoalPlayer:
-        if(isPlayerFound){
-          map[w][z][y][x] -= SokoObj.Player; //kill pseudo player
+      case SokoObj.Player1:
+        if(isPlayer1Found){
+          map[w][z][y][x] -= SokoObj.Player1; //kill pseudo player
         }else{
-          playPos = [x,y,z,w];
-          isPlayerFound = true;
+          playPos[0] = [x,y,z,w];
+          isPlayer1Found = true;
         }
       break;
-      case SokoObj.Box:
-        b++;
-      break;
-      case SokoObj.Goal:
-        g++;
+      case SokoObj.Player2:
+        if(isPlayer2Found){
+          map[w][z][y][x] -= SokoObj.Player2; //kill pseudo player
+        }else{
+          playPos[1] = [x,y,z,w];
+          isPlayer2Found = true;
+        }
       break;
       default:
       break;
     }//switch
   } } } }
-  if(!isPlayerFound){
-    map[mmax/2][mmax/2][mmax/2][mmax/2]=SokoObj.Player;
-    playPos=[mmax/2,mmax/2,mmax/2,mmax/2];
+  if(!isPlayer1Found){
+    map[2][2][mmax/2][mmax/2]=SokoObj.Player;
+    playPos[0]=[2,2,mmax/2,mmax/2];
+  }
+  if(!isPlayer2Found){
+    map[mmax-3][mmax-3][mmax/2][mmax/2]=SokoObj.Player;
+    playPos[1]=[mmax-3,mmax-3,mmax/2,mmax/2];
   }
   leftTask = [b,g].min();// reset task
-  camPos = playPos.clone();
+  camPos = playPos[0].clone();
   isRequestedDraw = true;
-  setGameState(0);
 }
 /*-----------------------------------
-  movePlayer 
+  procCom
+  computer algorithm.
+  make inertia[1]
+-----------------------------------*/
+var procCom=function(){
+  if(map[playPos[1][3]+inertia[1][3]]
+        [playPos[1][2]+inertia[1][2]]
+        [playPos[1][1]+inertia[1][1]]
+        [playPos[1][0]+inertia[1][0]]==0){
+    if(Math.random()<comInertia) return; //return if no clush without change inertia
+  }
+  var o0 = new Array(motiondiff.length);
+  var o  = new Array(motiondiff.length);
+  for(var mi=0;mi<motiondiff.length;mi++){
+    o0[mi] = mi;
+  }
+  for(var mi=0;mi<motiondiff.length;mi++){
+    var i =parseInt((motiondiff.length-mi)*Math.random());
+    o[mi] = o0[i];
+    o0.splice(i,1);
+  }
+  var mi=0;
+  for(mi=0;mi<motiondiff.length;mi++){
+    parseInt(Math.random()*100);
+    if(map[playPos[1][3]+motiondiff[o[mi]][3]][playPos[1][2]+motiondiff[o[mi]][2]][playPos[1][1]+motiondiff[o[mi]][1]][playPos[1][0]+motiondiff[o[mi]][0]]==0){
+      inertia[1]=motiondiff[o[mi]].clone(); // change inertia
+      break;
+    }
+  }
+  if(isDebug2){
+    debugout = document.getElementById("debugout");
+    debugout.innerHTML = "debug:"+mi;
+  }
+}
+var lastmi;
+/*-----------------------------------
+  procPhysics 
   change arrangement in the level
   when player move.
 -----------------------------------*/
-var movePlayer=function(motion){
-  if(motion<0 || motion>=8) return;
-  var nowPos  = playPos;
-  var newPos  = new Array(4);
-  var newPos2 = new Array(4);
-  for(var d=0;d<4;d++){
-    newPos[d]  = motiondiff[d][motion]  +playPos[d];
-    newPos2[d] = motiondiff[d][motion]*2+playPos[d];
-    newPos [d] = (newPos [d] + mmax) % mmax; //torus
-    newPos2[d] = (newPos2[d] + mmax) % mmax; //torus
+var procPhysics=function(){
+  var isClush = [false,false];
+  for(var pi=0;pi<2;pi++){
+    var playNext=new Array(4);
+    for(var di=0;di<4;di++){
+      playNext[di] = playPos[pi][di]+inertia[pi][di];
+    }
+    if(map[playNext[3]][playNext[2]][playNext[1]][playNext[0]]!=SokoObj.Blank){
+      isClush[pi] = true;
+    }else{
+      map[playPos[pi][3]][playPos[pi][2]][playPos[pi][1]][playPos[pi][0]]=pi+3;
+      map[playNext[3]][playNext[2]][playNext[1]][playNext[0]]=pi+1;
+    }
+    playPos[pi] = playNext.clone();
   }
-  
-  var nowPosObj  = map[playPos[3]][playPos[2]][playPos[1]][playPos[0]];
-  var newPosObj  = map[newPos[3]][newPos[2]][newPos[1]][newPos[0]];
-  var newPosObj2 = map[newPos2[3]][newPos2[2]][newPos2[1]][newPos2[0]];
-  
-  switch(newPosObj){
-    case SokoObj.Blank: case SokoObj.Goal:
-      map[nowPos[3]][nowPos[2]][nowPos[1]][nowPos[0]] = nowPosObj - SokoObj.Player;
-      map[newPos[3]][newPos[2]][newPos[1]][newPos[0]] = newPosObj + SokoObj.Player;
-      playPos = newPos.clone();
-    break;
-    case SokoObj.Goal:
-      map[nowPos[3]][nowPos[2]][nowPos[1]][nowPos[0]] = nowPosObj - SokoObj.Player;
-      map[newPos[3]][newPos[2]][newPos[1]][newPos[0]] = newPosObj + SokoObj.Player;
-      playPos = newPos.clone();
-    break;
-    case SokoObj.Wall:
-    break;
-    default:
-      if(newPosObj2==SokoObj.Blank || newPosObj2==SokoObj.Goal){
-        map[nowPos [3]][nowPos [2]][nowPos [1]][nowPos [0]] = nowPosObj  - SokoObj.Player;
-        map[newPos [3]][newPos [2]][newPos [1]][newPos [0]] = newPosObj  + SokoObj.Player - SokoObj.Box;
-        map[newPos2[3]][newPos2[2]][newPos2[1]][newPos2[0]] = newPosObj2                  + SokoObj.Box;
-        playPos = newPos.clone();
-        if(newPosObj==SokoObj.GoalBox                        ) leftTask++;
-        if(newPosObj==SokoObj.Box && newPosObj2==SokoObj.Goal) leftTask--;
-      }
-    break;
+  camPos = playPos[0].clone();
+  if(isClush[1] && isClush[0]){
+    setGameState(2);
+  }else if(isClush[0]){
+    setGameState(3);
+  }else if(isClush[1]){
+    setGameState(4);
   }
-  camPos  = playPos.clone();
   isRequestedDraw = true;
-  if(leftTask==0) setGameState(1);
 }
-
+var restartGame =function(){
+  initGame();
+  setGameState(0);
+}
 /*----------------------------------------
  entryName
 ----------------------------------------*/
@@ -565,7 +585,7 @@ var handleKeyDown = function(e){
     var motion = "AW__DX__".indexOf(c);
     if(motion<0) return;
     if(e.shiftKey) motion+=2;
-    movePlayer(motion);
+    inertia[0] = motiondiff[motion].clone();
     //prevent key
     if(e.preventDefault) e.preventDefault();
     e.returnValue = false;
@@ -641,7 +661,15 @@ var setGameState=function(state){
       gameState = state;
     break;
     case 2:
-      document.getElementById('nameentrydiv').innerHTML = "thank you!";
+      document.getElementById('nameentrydiv').innerHTML = "Draw!";
+      gameState = state;
+    break;
+    case 3:
+      document.getElementById('nameentrydiv').innerHTML = "You Lose...";
+      gameState = state;
+    break;
+    case 4:
+      document.getElementById('nameentrydiv').innerHTML = "You Won!!";
       gameState = state;
     break;
     default:

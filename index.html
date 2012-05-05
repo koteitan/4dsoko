@@ -12,22 +12,33 @@
 <script type="text/javascript" src="./4dsoko_event.js"></script>
 <script type="text/javascript" src="./4dsoko_levelList.js"></script>
 <style><!--
-  body{font-family:Arial; color:#00FF00; background-color:black}  
-  a{color:#00FF00;border-style:none;text-decoration:underline}
-  a:link{color:#00FF00;border-style:none;text-decoration:underline}
-  a:visited{color:#00FF00;border-style:none;text-decoration:underline}
-  a:hover{color:#00FF00;border-color:none;text-decoration:underline}
+  body{font-family:Arial; color:#8888FF; background-color:black}  
+  a{color:#8888FF;border-style:none;text-decoration:underline}
+  a:link{color:#8888FF;border-style:none;text-decoration:underline}
+  a:visited{color:#8888FF;border-style:none;text-decoration:underline}
+  a:hover{color:#8888FF;border-color:none;text-decoration:underline}
   address{text-align:right;font-style:normal}
-  td{border-color:#00FF00;text-align:center}
-  th{border-color:#00FF00;text-align:center}
-  input{border-style:solid;border-color:#00FF00;background-color:#000000;color:#00FF00}
+  td{border-color:#8888FF;text-align:center}
+  th{border-color:#8888FF;text-align:center}
+  input{border-style:solid;border-color:#8888FF;background-color:#000000;color:#8888FF}
   .tdbutton{border-width:1px;border-style:solid;border-color:white;height:30px;width:30px}
   hr{border-style:solid}
 --></style>
-<title>4Dsoko</title>
+<title>4DTRON</title>
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-31232068-1']);
+  _gaq.push(['_setDomainName', 'ukaibutton.com']);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
 </head>
 <body>
-<div style="vertical-align:top"><img src="logo.png">&nbsp;4 dimensional sokoban like puzzle.</div>
+<div style="vertical-align:top"><img src="logo.png">&nbsp;4 dimensional TRON like action game.</div>
 <br>
 <table style="width:100%"><td style="text-align:right;vertical-align:center">
   <table align="right" style="font-size:8pt"><caption>Softkey</caption>
@@ -71,11 +82,10 @@
     </tr>
   </table>
 </td><td style="text-align:left">
-<canvas align="left" id="canvas1" width="256" height="16" style="background-color:black;border-width:1px;border-style:solid;border-color:#00FF00"></canvas><br>
-<canvas align="left" id="canvas0" width="256" height="256" style="background-color:black;border-width:1px;border-style:solid;border-color:#00FF00"></canvas><br>
+<canvas align="left" id="canvas1" width="256" height="16" style="background-color:black;border-width:1px;border-style:solid;border-color:#8888FF"></canvas><br>
+<canvas align="left" id="canvas0" width="256" height="256" style="background-color:black;border-width:1px;border-style:solid;border-color:#8888FF"></canvas><br>
 <form id="modeform">
-<input type=radio name="mode" id="mode_play" value="play" checked>play
-<input type=radio name="mode" id="mode_edit" value="edit">edit
+<input type=button name="startbutton" id="startbutton" value="start" onclick="javascript:restartGame();">
 <div id="nameentrydiv"></div>
 </form>
 <br>
@@ -90,22 +100,12 @@
     <tr><td>awdx</td><td>move in (x,y).</td></tr>
     <tr><td>AWDX</td><td>move in (z,w).</td></tr>
     </table>
-    <br>
-    <table style="font-size:8pt;width:100%"><caption>to edit</caption>
-    <tr><th>key</th><th>function</th></tr>
-    <tr><td>awdx</td><td>move cursor.</td></tr>
-    <tr><td>q/e</td><td>change charactor.</td></tr>
-    <tr><td>[enter]<br>/mouse</td><td>put charactor.</td></tr>
-    <tr><td>shift +<br> mouse</td><td>put multiple charactors.</td></tr>
-    <tr><td>wheel</td><td>scroll.</td></tr>
-    </table>
   </div>
   <br>
   <br>
   <br>
 </td></tr></table>
 <ul>
-  <li>Tutorial of 4-dimension <a href="tutorials/">[English]</a> <a href="tutorials/ja.html">[Japanese]</a></li>
   <li><a href="about.html">about this game</a></li>
 </ul>
 </address>
@@ -114,11 +114,11 @@
 <br><br><br><br><br>
 <hr>
   <address>
-  4Dsoko
+  4DTRON
   version <span id="versiondisplay"></span><br>
   <script type="text/javascript" src="./4dsoko_version.js"></script>
   programed by <a href="http://twitter.com/#!/koteitan">koteitan</a><br>
-  source code is at <a href="https://github.com/koteitan/4dsoko">github</a><br>
+  source code is at <a href="https://github.com/koteitan/4dtron">github</a><br>
   </address>
 </body>
 </html>
