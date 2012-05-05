@@ -74,7 +74,7 @@ var selchara = 0; // charactor to put in edit mode
   [ 0, 0, 0,+1],// X
 ];
 var inertia=[[+1,0,0,0],[-1,0,0,0]];
-var comInertia = 0.2;
+var comInertia = 0.10;
 var leftTask=0; // number of left box (or goal)
 gameState=2; // game state.0=playing / 1=solved and entering name / 2=stopped
 //ENTRY POINT --------------------------
@@ -288,7 +288,8 @@ var procCom=function(){
         [playPos[1][2]+inertia[1][2]]
         [playPos[1][1]+inertia[1][1]]
         [playPos[1][0]+inertia[1][0]]==0){
-    if(Math.random()<comInertia) return; //return if no clush without change inertia
+    // no clash with staying inertia
+    if(Math.random()>comInertia) return; //no change inertia
   }
   var o0 = new Array(motiondiff.length);
   var o  = new Array(motiondiff.length);
