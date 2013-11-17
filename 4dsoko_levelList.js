@@ -83,7 +83,7 @@ var displayLevelListWait=function(){
 */
 var displayLevelList=function(){
   var htmlout="";
-  htmlout += "<table width='90%' border=1 style='border-style:solid;border-color:#00FF00;border-collapse:collapse'><caption>Posted level list <small>(Please post your edit!)</small></caption>";
+  htmlout += "<table width='90%' border=1 style='border-style:solid;border-color:#9900FF;border-collapse:collapse'><caption>Posted level list <small>(Please post your edit!)</small></caption>";
   htmlout += "<tr><th>Command</th><th>#</th><th>Title</th><th>Author</th><th>Description</th><th>Winners</th><th>delete</th>";
   var i=0;
   for(i=0;i<levelList.list.length;i++){
