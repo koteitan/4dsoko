@@ -1,10 +1,10 @@
-  4dsoko -- 4-dimensional sokoban like puzzle.
+  4d billiyards -- 4-dimensional billiyards game.
 
   concept:
-    4-dimensional sokoban like puzzle.
+    4-dimensional billiyards game.
 
   game site:
-    http://www.ukaibutton.com/4dsoko/
+    http://www.ukaibutton.com/4dbill/
 
   platform:
     JavaScript / HTML5 Canvas
@@ -14,9 +14,9 @@
     If you use with IE, excanvas.js is required.
 
   forum:
-    Why don't you make 4-dimensional game? (Japanese Only)
-    http://toro.2ch.net/test/read.cgi/gamedev/1151809341/
-
+    Why don't you make 4-dimensional game? 
+    2nd dimension (Japanese Only)
+    http://toro.2ch.net/test/read.cgi/gamedev/1383053532
 
                                                  koteitan
                            http://twitter.com/#!/koteitan
