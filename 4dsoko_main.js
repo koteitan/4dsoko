@@ -30,10 +30,12 @@ var ballcolor = [
   'rgb(  0,255,255)',
   'rgb(255,255,255)' //my ball
 ];
+sightcolor = 'rgb(128,0,255)';
  // for display
 var planes = 4; // 3rd & 4th dimensional expanded planes
 var invpl = 1/planes;
-var shotpos = new Array(4);
+var sightpos  = new Array(4);
+var sightpos2 = new Array(4);
 // dinamic var on game
 var timenow=0;
 var p = new Array(balls);//p[d][b] = d th dimensional position of ball b
@@ -120,18 +122,30 @@ var procDraw=function(){
   }
   //sight -----------
   if(isMouseDragged){
-    ctx[0].strokeStyle='rgb(128,0,255)';
+    ctx[0].strokeStyle=sightcolor;
     ctx[0].strokeWeight='1';
-    var x = Math.floor((shotpos[0]+1)*0.5*dxPpl + ((shotpos[2]+1)*0.5*planes-0.5)*dxPpl);
-    var y = Math.floor((shotpos[1]+1)*0.5*dyPpl + ((shotpos[3]+1)*0.5*planes-0.5)*dyPpl);
+    var x = Math.floor((sightpos[0]+1)*0.5*dxPpl + ((sightpos[2]+1)*0.5*planes-0.5)*dxPpl);
+    var y = Math.floor((sightpos[1]+1)*0.5*dyPpl + ((sightpos[3]+1)*0.5*planes-0.5)*dyPpl);
     ctx[0].strokeRect(x-dxPpl, y-dyPpl, dxPpl, dyPpl);
     ctx[0].strokeRect(x      , y-dyPpl, dxPpl, dyPpl);
     ctx[0].strokeRect(x-dxPpl, y      , dxPpl, dyPpl);
     ctx[0].strokeRect(x      , y      , dxPpl, dyPpl);
   }
   //balls ---------
-  for(var b=0;b<balls;b++){
-    ctx[0].strokeStyle = ballcolor[b];
+  for(var b=0;b<balls+1;b++){
+    var pb;
+    if(b==balls){
+      if(isMouseDragged){
+        //sight point
+        pb=sightpos2;
+        ctx[0].strokeStyle = sightcolor;
+      }else{
+        continue;
+      }
+    }else{
+      pb=p[b];
+      ctx[0].strokeStyle = ballcolor[b];
+    }
     ctx[0].strokeWeight='1';
 //    |        |        |         |         |:
 //         |        |         |        |     :
@@ -141,13 +155,13 @@ var procDraw=function(){
 //    0000 11111111 222222222 33333333 4444  :Math.floor((p[3]+1)*0.5*planes+0.5)
 //   0.5 1 0  0.5 1 0  0.5  1 0  0.5 1 0  0.5:          ((p[3]+1)*0.5*planes+0.5)%1
 //
-    var z0 = (p[b][2]+1)*0.5*planes+0.5;
-    var w0 = (p[b][3]+1)*0.5*planes+0.5;
-    var zr1 = z0%1;
-    var wr1 = w0%1;
-    var zr0 = 1-zr1;
-    var wr0 = 1-wr1;
-    var r = [[zr0*wr0, zr1*wr0],[zr0*wr1, zr1*wr1] ]; // r[zi][wi] 
+    var z0 = (pb[2]+1)*0.5*planes+0.5;
+    var w0 = (pb[3]+1)*0.5*planes+0.5;
+    var zr0 = z0%1;
+    var wr0 = w0%1;
+    var zr1 = 1-zr0;
+    var wr1 = 1-wr0;
+    var r = [[zr0*wr0, zr0*wr1],[zr1*wr0, zr1*wr1] ]; // r[zi][wi] 
     z0 = Math.floor(z0);
     w0 = Math.floor(w0);
     
@@ -156,8 +170,8 @@ var procDraw=function(){
     for(zi=0;zi<2;zi++){
       for(wi=0;wi<2;wi++){
         if(z0-zi>=0 && z0-zi<planes && w0-wi>=0 && w0-wi<planes){
-          x = (p[b][0]+1)*0.5*dxPpl + (z0-zi)*dxPpl;
-          y = (p[b][1]+1)*0.5*dyPpl + (w0-wi)*dyPpl;
+          x = (pb[0]+1)*0.5*dxPpl + (z0-zi)*dxPpl;
+          y = (pb[1]+1)*0.5*dyPpl + (w0-wi)*dyPpl;
           ctx[0].beginPath();
           ctx[0].arc(x, y, radius*r[zi][wi]*0.5*dxPpl, 0, Math.PI*2, false);
           ctx[0].stroke();
@@ -250,22 +264,20 @@ var display2World = function (disp){
 }
 //event handlers after queue ------------
 var handleMouseDown = function(){
-  shotpos = display2World(mouseDownPos);
+  sightpos = display2World(mouseDownPos);
+  sightpos2 = sightpos.clone();
   isRequestedDraw = true;
 }
 var handleMouseDragging = function(){
-  var shotpos2 = shotpos.clone();
-  shotpos2[2] += (mousePos[0]-mouseDownPos[0])/canvas[0].width *2;
-  shotpos2[3] += (mousePos[1]-mouseDownPos[1])/canvas[0].height*2;
-  p[myball] = shotpos2.clone();
+  sightpos2 = sightpos.clone();
+  sightpos2[2] += (mousePos[0]-mouseDownPos[0])/canvas[0].width *2;
+  sightpos2[3] += (mousePos[1]-mouseDownPos[1])/canvas[0].height*2;
   isRequestedDraw = true;
-  print(shotpos2);
 }
 var handleMouseUp = function(){
-  var shotpos2 = shotpos.clone();
-  shotpos2[2] += (mouseUpPos[0]-mouseDownPos[0])/canvas[0].width *2;
-  shotpos2[3] += (mouseUpPos[1]-mouseDownPos[1])/canvas[0].height*2;
-  p[myball] = shotpos2.clone();
+  sightpos2 = sightpos.clone();
+  sightpos2[2] += (mouseUpPos[0]-mouseDownPos[0])/canvas[0].width *2;
+  sightpos2[3] += (mouseUpPos[1]-mouseDownPos[1])/canvas[0].height*2;
   isRequestedDraw = true;
 }
 var handleMouseMoving = function(){
