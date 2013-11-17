@@ -10,7 +10,7 @@ var dims = 4;
  // for game
 var balls = 17;
 var myball = balls-1; //index of my ball
-var radius = 1/16;
+var radius = 1/8;
 var ballcolor = [
   'rgb(255,  0,  0)',
   'rgb(128,128,  0)',
@@ -33,7 +33,7 @@ var ballcolor = [
  // for display
 var planes = 4; // 3rd & 4th dimensional expanded planes
 var invpl = 1/planes;
-
+var shotpos = new Array(4);
 // dinamic var on game
 var timenow=0;
 var p = new Array(balls);//p[d][b] = d th dimensional position of ball b
@@ -73,7 +73,6 @@ if(document.all){
   frameRate  = 60; // [fps]
 }
 var motionRate = 2; // [fps]
-var debugout;
 var isKeyTyping;
 //initialize -----------
 //gui
@@ -98,6 +97,8 @@ var initGame=function(){
 var procDraw=function(){
   var dx = canvas[0].width;
   var dy = canvas[0].height;
+  var dxPpl = dx*invpl;
+  var dyPpl = dy*invpl;
   //clear ---------
   ctx[0].clearRect(0, 0, dx-1, dy-1);
   //border ---------
@@ -105,48 +106,64 @@ var procDraw=function(){
   ctx[0].strokeWeight='1';
   ctx[0].strokeRect(0, 0, dx-1, dy-1);
   //planes ---------
-  ctx[0].strokeStyle='rgb(0,0,0)';
+  ctx[0].strokeStyle='rgb(0,255,0)';
   ctx[0].strokeWeight='1';
   for(var x=0;x<planes;x++){
     for(var y=0;y<planes;y++){
       ctx[0].strokeRect(
-        Math.floor((x+0)*invpl*dx)   ,
-        Math.floor((x+0)*invpl*dy)   ,
-        Math.floor((x+1)*invpl*dx) -1,
-        Math.floor((x+1)*invpl*dy) -1
+        Math.floor((x+0)*dxPpl) +2,
+        Math.floor((y+0)*dyPpl) +2,
+        Math.floor(      dxPpl) -4,
+        Math.floor(      dyPpl) -4
       );
     }
   }
+  //sight -----------
+  if(isMouseDragged){
+    ctx[0].strokeStyle='rgb(128,0,255)';
+    ctx[0].strokeWeight='1';
+    var x = Math.floor((shotpos[0]+1)*0.5*dxPpl + ((shotpos[2]+1)*0.5*planes-0.5)*dxPpl);
+    var y = Math.floor((shotpos[1]+1)*0.5*dyPpl + ((shotpos[3]+1)*0.5*planes-0.5)*dyPpl);
+    ctx[0].strokeRect(x-dxPpl, y-dyPpl, dxPpl, dyPpl);
+    ctx[0].strokeRect(x      , y-dyPpl, dxPpl, dyPpl);
+    ctx[0].strokeRect(x-dxPpl, y      , dxPpl, dyPpl);
+    ctx[0].strokeRect(x      , y      , dxPpl, dyPpl);
+  }
   //balls ---------
-  ctx[0].strokeWeight='2';
   for(var b=0;b<balls;b++){
-    if(b==balls-1) ctx[0].strokeStyle = ballcolor[b];
+    ctx[0].strokeStyle = ballcolor[b];
+    ctx[0].strokeWeight='1';
 //    |        |        |         |         |:
 //         |        |         |        |     :
 //   -1      -0.5       0       +0.5       +1:            p[3]
 //    0        1        2         3          :           (p[3]+1)*0.5*planes
-//   0.5   1        2         3        4  4.5:           (p[3]+1)*0.5*planes-0.5
-//    0000 11111111 222222222 33333333 4444  :Math.floor((p[3]+1)*0.5*planes-0.5)
-//   0.5 1 0  0.5 1 0  0.5  1 0  0.5 1 0  0.5:          ((p[3]+1)*0.5*planes-0.5)%1
+//   0.5   1        2         3        4  4.5:           (p[3]+1)*0.5*planes+0.5
+//    0000 11111111 222222222 33333333 4444  :Math.floor((p[3]+1)*0.5*planes+0.5)
+//   0.5 1 0  0.5 1 0  0.5  1 0  0.5 1 0  0.5:          ((p[3]+1)*0.5*planes+0.5)%1
 //
-    var z0 = (p[2]+1)*0.5*planes-0.5;
-    var w0 = (p[3]+1)*0.5*planes-0.5;
-    var zr0 = z0%1;
-    var wr0 = w0%1;
-    var zr1 = 1-zr0;
-    var wr1 = 1-wr0;
+    var z0 = (p[b][2]+1)*0.5*planes+0.5;
+    var w0 = (p[b][3]+1)*0.5*planes+0.5;
+    var zr1 = z0%1;
+    var wr1 = w0%1;
+    var zr0 = 1-zr1;
+    var wr0 = 1-wr1;
     var r = [[zr0*wr0, zr1*wr0],[zr0*wr1, zr1*wr1] ]; // r[zi][wi] 
     z0 = Math.floor(z0);
     w0 = Math.floor(w0);
     
     var x;
     var y;
-    for(zi=-1;zi<1;zi++){
-      for(wi=-1;wi<1;wi++){
+    for(zi=0;zi<2;zi++){
+      for(wi=0;wi<2;wi++){
         if(z0-zi>=0 && z0-zi<planes && w0-wi>=0 && w0-wi<planes){
-          x = (p[0]+1)*0.5*dx*invpl + (z0-zi)*dx*invpl;
-          y = (p[1]+1)*0.5*dy*invpl + (w0-wi)*dy*invpl;
-          ctx[0].arc(x+radius, y+radius, radius*r[zi][wi], 0, Math.PI*2, false);
+          x = (p[b][0]+1)*0.5*dxPpl + (z0-zi)*dxPpl;
+          y = (p[b][1]+1)*0.5*dyPpl + (w0-wi)*dyPpl;
+          ctx[0].beginPath();
+          ctx[0].arc(x, y, radius*r[zi][wi]*0.5*dxPpl, 0, Math.PI*2, false);
+          ctx[0].stroke();
+          if(b==myball){
+            var x=1;
+          }
         }
       }
     }
@@ -224,26 +241,32 @@ var display2World = function (disp){
   var wwi = disp[1]*invdy*planes;
   wp = new Array(4);
   wp[0] = (wzi%1)*2-1;
-  wp[1] = (wzi%1)*2-1;
+  wp[1] = (wwi%1)*2-1;
   wp[2] = Math.floor(wzi);
   wp[3] = Math.floor(wwi);
+  wp[2] = (wp[2]+0.5)*invpl*2-1;
+  wp[3] = (wp[3]+0.5)*invpl*2-1;
   return wp;
 }
 //event handlers after queue ------------
 var handleMouseDown = function(){
-  //
+  shotpos = display2World(mouseDownPos);
+  isRequestedDraw = true;
 }
 var handleMouseDragging = function(){
-  if(!mouseWithShiftKey){
-    mouseDownPos = mousePos.clone();
-    handleMouseDown();
-  }else{
-    // with shift
-    //
-  }
+  var shotpos2 = shotpos.clone();
+  shotpos2[2] += (mousePos[0]-mouseDownPos[0])/canvas[0].width *2;
+  shotpos2[3] += (mousePos[1]-mouseDownPos[1])/canvas[0].height*2;
+  p[myball] = shotpos2.clone();
+  isRequestedDraw = true;
+  print(shotpos2);
 }
 var handleMouseUp = function(){
-  //
+  var shotpos2 = shotpos.clone();
+  shotpos2[2] += (mouseUpPos[0]-mouseDownPos[0])/canvas[0].width *2;
+  shotpos2[3] += (mouseUpPos[1]-mouseDownPos[1])/canvas[0].height*2;
+  p[myball] = shotpos2.clone();
+  isRequestedDraw = true;
 }
 var handleMouseMoving = function(){
 //
@@ -256,43 +279,8 @@ var handleMouseWheel = function(){
   isRequestedDraw = true;
 }
 var handleKeyDown = function(e){
-  if(mode==1){
-    // edit
-    if(e.keyCode==13){
-      // put
-      map[curPos[3]][curPos[2]][curPos[1]][curPos[0]] = selchara;
-      isRequestedDraw = true;
-    }else if("E".indexOf(String.fromCharCode(e.keyCode))==0){
-      // sel--
-      selchara = (selchara+1+SokoObj.charactors) % SokoObj.charactors;
-      isRequestedDraw = true;
-    }else if("Q".indexOf(String.fromCharCode(e.keyCode))==0){
-      // sel++
-      selchara = (selchara-1+SokoObj.charactors) % SokoObj.charactors;
-      isRequestedDraw = true;
-    }else{
-      // move cursor
-      var c = String.fromCharCode(e.keyCode);
-      var motion = "AW__DX__".indexOf(c);
-      if(motion<0) return;
-      moveCursor(motion);
-      //prevent key
-      if(e.preventDefault) e.preventDefault();
-//      e.returnValue = false;
-      isRequestedDraw = true;
-    }
-  }else{
-    // play
-    var c = String.fromCharCode(e.keyCode);
-    var motion = "AW__DX__".indexOf(c);
-    if(motion<0) return;
-    if(e.shiftKey) motion+=2;
-    inertia[0] = motiondiff[motion].clone();
-    //prevent key
-    if(e.preventDefault) e.preventDefault();
-//    e.returnValue = false;
-    isRequestedDraw = true;
-  }
+//    var c = String.fromCharCode(e.keyCode);
+//    var motion = "AW__DX__".indexOf(c);
 }
 var handleChangeMode = function(newmode){
   mode = newmode;
@@ -358,5 +346,6 @@ var setGameState=function(state){
     break;
   }
 }
-
-
+var print=function(str){
+  document.getElementById('debugout').innerHTML = str;
+}
