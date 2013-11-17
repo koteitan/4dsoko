@@ -10,7 +10,6 @@
 <script type="text/javascript" src="./exmath.js"></script>
 <script type="text/javascript" src="./4dsoko_main.js"></script>
 <script type="text/javascript" src="./4dsoko_event.js"></script>
-<script type="text/javascript" src="./4dsoko_levelList.js"></script>
 <style><!--
   body{font-family:Arial; color:#8888FF; background-color:black}  
   a{color:#8888FF;border-style:none;text-decoration:underline}
@@ -24,7 +23,7 @@
   .tdbutton{border-width:1px;border-style:solid;border-color:white;height:30px;width:30px}
   hr{border-style:solid}
 --></style>
-<title>4DTRON</title>
+<title>4D Billiyards</title>
 <script type="text/javascript">
   var _gaq = _gaq || [];
   _gaq.push(['_setAccount', 'UA-31232068-1']);
@@ -38,51 +37,11 @@
 </script>
 </head>
 <body>
-<div style="vertical-align:top"><img src="logo.png">&nbsp;4 dimensional TRON like action game.</div>
+<div style="vertical-align:top"><!--img src="logo.png"-->&nbsp;4 dimensional Billiyards game.</div>
 <br>
 <table style="width:100%"><td style="text-align:right;vertical-align:center">
-  <table align="right" style="font-size:8pt"><caption>Softkey</caption>
-  <col span=3 style="width:30px">
-  <tr><td></td><td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=false;e.keyCode=87;handleKeyDown(e);">w</td><td>→<br>+x</td></tr>
-  <tr>         <td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=false;e.keyCode=65;handleKeyDown(e);">a</td>
-  <td></td>    <td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=false;e.keyCode=68;handleKeyDown(e);">d</td></tr>
-  <tr><td>↓+y</td><td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=false;e.keyCode=88;handleKeyDown(e);">x</td><td></td></tr>
-  <tr><td style="height:20px"></td></tr>
-  <tr><td></td><td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=true ;e.keyCode=87;handleKeyDown(e);">W</td><td>→<br>+z</td></tr>
-  <tr>         <td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=true ;e.keyCode=65;handleKeyDown(e);">A</td>
-  <td></td>    <td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=true ;e.keyCode=68;handleKeyDown(e);">D</td></tr>
-  <tr><td>↓+w</td><td class="tdbutton" onclick="javscript:var e=new Object();e.shiftKey=true ;e.keyCode=88;handleKeyDown(e);">X</td><td></td></tr>
-  </table><br clear=right><br>
-  <table align=right><caption>Coordinate Rotation:</caption>
-    <tr><th>x</th><th>y</th><th>z</th><th>w</th></tr>
-    <tr>
-      <th>x</th>
-      <td></td>
-      <td><input type=button onclick="javascript:rotateLevel(1,0);" value="xy" class="tdbutton"></td>
-      <td><input type=button onclick="javascript:rotateLevel(2,0);" value="xz" class="tdbutton"></td>
-      <td><input type=button onclick="javascript:rotateLevel(3,0);" value="xw" class="tdbutton"></td>
-    </tr><tr>
-      <th>z</th>
-      <td><input type=button onclick="javascript:rotateLevel(0,1);" value="yx" class="tdbutton"></td>
-      <td></td>
-      <td><input type=button onclick="javascript:rotateLevel(2,1);" value="yz" class="tdbutton"></td>
-      <td><input type=button onclick="javascript:rotateLevel(3,1);" value="yw" class="tdbutton"></td>
-    </tr><tr>
-      <th>y</th>
-      <td><input type=button onclick="javascript:rotateLevel(0,2);" value="zx" class="tdbutton"></td>
-      <td><input type=button onclick="javascript:rotateLevel(1,2);" value="zy" class="tdbutton"></td>
-      <td></td>
-      <td><input type=button onclick="javascript:rotateLevel(3,2);" value="zw" class="tdbutton"></td>
-    </tr><tr>
-      <th>w</th>
-      <td><input type=button onclick="javascript:rotateLevel(0,3);" value="wx" class="tdbutton"></td>
-      <td><input type=button onclick="javascript:rotateLevel(1,3);" value="wy" class="tdbutton"></td>
-      <td><input type=button onclick="javascript:rotateLevel(2,3);" value="wz" class="tdbutton"></td>
-      <td></td>
-    </tr>
-  </table>
+<!-- left UI -->
 </td><td style="text-align:left">
-<canvas align="left" id="canvas1" width="256" height="16" style="background-color:black;border-width:1px;border-style:solid;border-color:#8888FF"></canvas><br>
 <canvas align="left" id="canvas0" width="256" height="256" style="background-color:black;border-width:1px;border-style:solid;border-color:#8888FF"></canvas><br>
 <form id="modeform">
 <input type=button name="startbutton" id="startbutton" value="start" onclick="javascript:restartGame();">
@@ -93,14 +52,7 @@
 <br>
 <div id="debugout"></div>
 </td><td style="text-align:center">
-  <div id="keydescription">
-    <span style="font-size:8pt">Key Assign:</span><br>
-    <table style="font-size:8pt;width:100%"><caption>to play</caption>
-    <tr><th>key</th><th>function</th></tr>
-    <tr><td>awdx</td><td>move in (x,y).</td></tr>
-    <tr><td>AWDX</td><td>move in (z,w).</td></tr>
-    </table>
-  </div>
+<!-- rightUI (key description)-->
   <br>
   <br>
   <br>
@@ -114,11 +66,11 @@
 <br><br><br><br><br>
 <hr>
   <address>
-  4DTRON
+  4D Billiyards
   version <span id="versiondisplay"></span><br>
   <script type="text/javascript" src="./4dsoko_version.js"></script>
   programed by <a href="http://twitter.com/#!/koteitan">koteitan</a><br>
-  source code is at <a href="https://github.com/koteitan/4dtron">github</a><br>
+  source code is at <a href="https://github.com/koteitan/4dbill">github</a><br>
   </address>
 </body>
 </html>
