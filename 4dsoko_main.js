@@ -5,77 +5,39 @@
 // static var on game
 var isDebug1=false; //debug flag
 var isDebug2=false; //debug flag
-var mmax = 8; //length of edge of the world (common for dimensions)
-var SokoObj = function(){};
-SokoObj.charaLen   = 8; //[pixel]
-SokoObj.Blank      = 0;
-SokoObj.Player1    = 1;
-SokoObj.Player2    = 2;
-SokoObj.Player1Wall= 3;
-SokoObj.Player2Wall= 4;
-SokoObj.Wall       = 5;
-SokoObj.charactors = 6;
-SokoObj.toString = ['blank','player0','player1','wall player1','wall player2'];
-SokoObj.draw = new Array(SokoObj.charactors);
-// blank -------
-SokoObj.draw[SokoObj.Blank] = function(ctx,x,y){};
-// player 1-------
-SokoObj.draw[SokoObj.Player1] = function(ctx,x,y){
-  ctx.fillStyle = 'rgb(128,255,128)'; //green
-  ctx.fillRect(x, y, SokoObj.charaLen, SokoObj.charaLen);
-};
-// player 2-------
-SokoObj.draw[SokoObj.Player2] = function(ctx,x,y){
-  ctx.fillStyle = 'rgb(128,128,255)'; //brue
-  ctx.fillRect(x, y, SokoObj.charaLen, SokoObj.charaLen);
-};
-// player 1 wall-------
-SokoObj.draw[SokoObj.Player1Wall] = function(ctx,x,y){
-  ctx.fillStyle = 'rgb(0,255,0)'; //green
-  ctx.fillRect(x, y, SokoObj.charaLen, SokoObj.charaLen);
-};
-// player 2 wall-------
-SokoObj.draw[SokoObj.Player2Wall] = function(ctx,x,y){
-  ctx.fillStyle = 'rgb(0,0,255)'; //brue
-  ctx.fillRect(x, y, SokoObj.charaLen, SokoObj.charaLen);
-};
-// wall -------
-SokoObj.draw[SokoObj.Wall] = function(ctx,x,y){
-  ctx.fillStyle = 'rgb(128,128,128)'; //red
-  ctx.fillRect(x, y, SokoObj.charaLen, SokoObj.charaLen);
-}
-SokoObj.draw2 = SokoObj.draw.clone();
-SokoObj.draw2[SokoObj.Blank] = function(ctx,x,y){
-  ctx.fillStyle = 'rgb(0,0,0)'; //black
-  ctx.fillRect(x, y, SokoObj.charaLen, SokoObj.charaLen);
-};
+ // for world
+var dims = 4;
+ // for game
+var balls = 17;
+var myball = balls-1; //index of my ball
+var radius = 1/16;
+var ballcolor = [
+  'rgb(255,  0,  0)',
+  'rgb(128,128,  0)',
+  'rgb(255,128,  0)',
+  'rgb(  0,255,  0)',
+  'rgb(128,255,  0)',
+  'rgb(255,255,  0)',
+  'rgb(128,  0,128)',
+  'rgb(255,  0,128)',
+  'rgb(  0,128,128)',
+  'rgb(128,128,128)',
+  'rgb(  0,255,128)',
+  'rgb(  0,  0,255)',
+  'rgb(128,  0,255)',
+  'rgb(255,  0,255)',
+  'rgb(  0,128,255)',
+  'rgb(  0,255,255)',
+  'rgb(255,255,255)' //my ball
+];
+ // for display
+var planes = 4; // 3rd & 4th dimensional expanded planes
+var invpl = 1/planes;
+
 // dinamic var on game
 var timenow=0;
-var mode=0; /* 0:play mode. 1:edit mode.*/
-var map;       //4 dimensional map: map[w][z][y][x]=SokoObj.o obj index
-var camPos = [mmax/2, mmax/2, mmax/2, mmax/2]; // camera position (0123:xyzw)
-var playPos = new Array(); // player position 0123:xyzw
-var curPos    = camPos.clone(); // cursor position (0123:xyzw)
-var curPosEnd = curPos.clone(); // cursor end position (0123:xyzw)
-var camLen = 8; // length of field of view which is displayed (x,y common)
-var selchara = 0; // charactor to put in edit mode
-/* motiondiff[key][dim] 
-  = amount of change of position in [dim]'s dimension 
-  when the key is [key] pushed.*/
-  var motiondiff = [
-  //x  y  z  w
-  [-1, 0, 0, 0],// a
-  [ 0,-1, 0, 0],// w
-  [ 0, 0,-1, 0],// A
-  [ 0, 0, 0,-1],// W
-  [+1, 0, 0, 0],// d
-  [ 0,+1, 0, 0],// x
-  [ 0, 0,+1, 0],// D
-  [ 0, 0, 0,+1],// X
-];
-var inertia=[[+1,0,0,0],[-1,0,0,0]];
-var comInertia = 0.10;
-var leftTask=0; // number of left box (or goal)
+var p = new Array(balls);//p[d][b] = d th dimensional position of ball b
+for(var b=0;b<balls;b++) p[b] = new Array(dims);
 gameState=2; // game state.0=playing / 1=solved and entering name / 2=stopped
 //ENTRY POINT --------------------------
 window.onload=function(){
@@ -94,7 +56,6 @@ var procAll=function(){
   timenow += 1000/frameRate;
   if(timenow>=1000/motionRate){
     if(gameState==0){
-      procCom();
       procPhysics();
     }
     timenow -= 1000/motionRate;
@@ -117,7 +78,7 @@ var isKeyTyping;
 //initialize -----------
 //gui
 var initGui=function(){
-  for(var i=0;i<2;i++){
+  for(var i=0;i<1;i++){
     canvas[i] = document.getElementById("canvas"+i);
     if(!canvas[i]||!canvas[i].getContext) return false;
     ctx[i] = canvas[i].getContext('2d');
@@ -127,110 +88,68 @@ var initGui=function(){
 //game
 var initGame=function(){
   //clear map in size mmax^4.
-  map = new Array(mmax);
-  for(var w=0;w<mmax;w++){
-    map[w]=new Array(mmax);
-    for(var z=0;z<mmax;z++){
-      map[w][z]=new Array(mmax);
-      for(var y=0;y<mmax;y++){
-        map[w][z][y]=new Array(mmax);
-        for(var x=0;x<mmax;x++){
-          map[w][z][y][x]=SokoObj.Blank;
-        }
-      }
-    }
-  }
   //make sample level
-  var m=mmax-1;
-  for(var z=0;z<mmax;z++){
-  for(var y=0;y<mmax;y++){
-  for(var x=0;x<mmax;x++){
-    map[0][z][y][x]=SokoObj.Wall;
-    map[m][z][y][x]=SokoObj.Wall;
-    map[z][0][y][x]=SokoObj.Wall;
-    map[z][m][y][x]=SokoObj.Wall;
-    map[z][y][0][x]=SokoObj.Wall;
-    map[z][y][m][x]=SokoObj.Wall;
-    map[z][y][x][0]=SokoObj.Wall;
-    map[z][y][x][m]=SokoObj.Wall;
-  }
-  }
-  }
-  map[1][1][1][1]=SokoObj.Player1;
-  map[mmax-2][mmax-2][mmax-2][mmax-2]=SokoObj.Player2;
-  mode = 0;
   readyPlay();
-//  initLevelList();
   timenow=0;
-  inertia=[[+1,0,0,0],[-1,0,0,0]];
 }
 /*-----------------------------------
   draw graphic routine.
 -----------------------------------*/
 var procDraw=function(){
+  var dx = canvas[0].width;
+  var dy = canvas[0].height;
   //clear ---------
-  ctx[0].clearRect(0, 0, canvas[0].width-1, canvas[0].height-1);
+  ctx[0].clearRect(0, 0, dx-1, dy-1);
   //border ---------
   ctx[0].strokeStyle='rgb(0,0,0)';
   ctx[0].strokeWeight='1';
-  ctx[0].strokeRect(0, 0, canvas[0].width-1, canvas[0].height-1);
-  //map ---------
-  var camLenPx = camLen*SokoObj.charaLen;
-  var camLenp2 = camLen/2;
-  for(var w=0;w<mmax;w++){
-    var w0 = canvas[0].height/2+(w-camPos[3])*camLenPx + (-camPos[1])*SokoObj.charaLen;
-    var w1 = w0+camLenPx;
-    if(w1<0 || w0>canvas[0].height) continue;
-    for(var z=0;z<mmax;z++){
-      var z0 = canvas[0].width/2+(z-camPos[2])*camLenPx + (-camPos[0])*SokoObj.charaLen;
-      var z1 = z0+camLenPx;
-      if(z1<0 || z0>canvas[0].width) continue;
-      for(var y=0;y<camLen;y++){
-        var y0 = w0 + y*SokoObj.charaLen;
-        var y1 = y1 + SokoObj.charaLen;
-        if(y1<0 || y1>canvas[0].height) continue;
-        for(var x=0;x<camLen;x++){
-          var x0 = z0 + x*SokoObj.charaLen;
-          var x1 = x1 + SokoObj.charaLen;
-          if(x1<0 || x1>canvas[0].width) continue;
-          (SokoObj.draw[map[w][z][y][x]])(ctx[0],x0-camLenp2,y0-camLenp2);
-        } //x
-      } //y
-      ctx[0].strokeStyle = 'rgb(0,255,255)';
-      ctx[0].strokeRect(z0-camLenp2, w0-camLenp2, camLenPx, camLenPx);
-    } //z
-  }//w
-// ctx[0].strokeRect(0,0, canvas[0].width/2, canvas[0].height/2); //debug
-  // cursor
-  if(mode==1){
-    ctx[0].strokeStyle="rgb(255,255,255)";
-    var cx0 = canvas[0].width /2+(curPos[2]-camPos[2])*camLenPx + (curPos[0]-camPos[0])*SokoObj.charaLen-camLenp2;
-    var cy0 = canvas[0].height/2+(curPos[3]-camPos[3])*camLenPx + (curPos[1]-camPos[1])*SokoObj.charaLen-camLenp2;
-    var cx1 = canvas[0].width /2+(curPosEnd[2]-camPos[2])*camLenPx + (curPosEnd[0]-camPos[0])*SokoObj.charaLen-camLenp2;
-    var cy1 = canvas[0].height/2+(curPosEnd[3]-camPos[3])*camLenPx + (curPosEnd[1]-camPos[1])*SokoObj.charaLen-camLenp2;
-    cx0=
-    ctx[0].strokeRect(cx0, cy0, SokoObj.charaLen+(cx1-cx0), SokoObj.charaLen+(cy1-cy0));
-  }
-  // toolbar
-  ctx[1].clearRect(0, 0, canvas[1].width-1, canvas[1].height-1);
-  if(mode==1){
-    ctx[1].fillStyle="rgb(0,0,255)";
-    ctx[1].fillRect  (64*selchara+2, 2, 64-12, canvas[1].height-3);
-    ctx[1].strokeStyle="rgb(128,128,255)";
-    ctx[1].strokeRect(64*selchara+2, 2, 64-12, canvas[1].height-3);
-  }
-  var centery = canvas[1].height/2;
-  if(!document.all){
-    ctx[1].textAlign="left";
-    ctx[1].textBaseline="center";
-    ctx[1].font = "6pt Arial";
-    ctx[1].fillStyle="rgb(255,255,255)";
-    for(var c=0;c<SokoObj.charactors;c++){
-      ctx[1].fillText(SokoObj.toString[c],64*c+SokoObj.charaLen/2+12, centery+3);
+  ctx[0].strokeRect(0, 0, dx-1, dy-1);
+  //planes ---------
+  ctx[0].strokeStyle='rgb(0,0,0)';
+  ctx[0].strokeWeight='1';
+  for(var x=0;x<planes;x++){
+    for(var y=0;y<planes;y++){
+      ctx[0].strokeRect(
+        Math.floor((x+0)*invpl*dx)   ,
+        Math.floor((x+0)*invpl*dy)   ,
+        Math.floor((x+1)*invpl*dx) -1,
+        Math.floor((x+1)*invpl*dy) -1
+      );
     }
   }
-  for(var c=0;c<SokoObj.charactors;c++){
-    SokoObj.draw2[c](ctx[1], 64*c+2,centery-SokoObj.charaLen/2);
+  //balls ---------
+  ctx[0].strokeWeight='2';
+  for(var b=0;b<balls;b++){
+    if(b==balls-1) ctx[0].strokeStyle = ballcolor[b];
+//    |        |        |         |         |:
+//         |        |         |        |     :
+//   -1      -0.5       0       +0.5       +1:            p[3]
+//    0        1        2         3          :           (p[3]+1)*0.5*planes
+//   0.5   1        2         3        4  4.5:           (p[3]+1)*0.5*planes-0.5
+//    0000 11111111 222222222 33333333 4444  :Math.floor((p[3]+1)*0.5*planes-0.5)
+//   0.5 1 0  0.5 1 0  0.5  1 0  0.5 1 0  0.5:          ((p[3]+1)*0.5*planes-0.5)%1
+//
+    var z0 = (p[2]+1)*0.5*planes-0.5;
+    var w0 = (p[3]+1)*0.5*planes-0.5;
+    var zr0 = z0%1;
+    var wr0 = w0%1;
+    var zr1 = 1-zr0;
+    var wr1 = 1-wr0;
+    var r = [[zr0*wr0, zr1*wr0],[zr0*wr1, zr1*wr1] ]; // r[zi][wi] 
+    z0 = Math.floor(z0);
+    w0 = Math.floor(w0);
+    
+    var x;
+    var y;
+    for(zi=-1;zi<1;zi++){
+      for(wi=-1;wi<1;wi++){
+        if(z0-zi>=0 && z0-zi<planes && w0-wi>=0 && w0-wi<planes){
+          x = (p[0]+1)*0.5*dx*invpl + (z0-zi)*dx*invpl;
+          y = (p[1]+1)*0.5*dy*invpl + (w0-wi)*dy*invpl;
+          ctx[0].arc(x+radius, y+radius, radius*r[zi][wi], 0, Math.PI*2, false);
+        }
+      }
+    }
   }
 }
 
@@ -239,80 +158,26 @@ var procDraw=function(){
   ready level before entering play mode.
 -----------------------------------*/
 var readyPlay=function(){
-  //find player
-  var isPlayer1Found = false;
-  var isPlayer2Found = false;
-  var b=0;
-  var g=0;
-  for(var w=0;w<mmax;w++){ for(var z=0;z<mmax;z++){ for(var y=0;y<mmax;y++){ for(var x=0;x<mmax;x++){
-    switch(map[w][z][y][x]){
-      case SokoObj.Player1:
-        if(isPlayer1Found){
-          map[w][z][y][x] -= SokoObj.Player1; //kill pseudo player
-        }else{
-          playPos[0] = [x,y,z,w];
-          isPlayer1Found = true;
-        }
-      break;
-      case SokoObj.Player2:
-        if(isPlayer2Found){
-          map[w][z][y][x] -= SokoObj.Player2; //kill pseudo player
-        }else{
-          playPos[1] = [x,y,z,w];
-          isPlayer2Found = true;
-        }
-      break;
-      default:
-      break;
-    }//switch
-  } } } }
-  if(!isPlayer1Found){
-    map[2][2][mmax/2][mmax/2]=SokoObj.Player;
-    playPos[0]=[2,2,mmax/2,mmax/2];
-  }
-  if(!isPlayer2Found){
-    map[mmax-3][mmax-3][mmax/2][mmax/2]=SokoObj.Player;
-    playPos[1]=[mmax-3,mmax-3,mmax/2,mmax/2];
-  }
-  leftTask = [b,g].min();// reset task
-  camPos = playPos[0].clone();
+  p=[
+    [-radius, -radius, -radius, -radius],
+    [+radius, -radius, -radius, -radius],
+    [-radius, +radius, -radius, -radius],
+    [+radius, +radius, -radius, -radius],
+    [-radius, -radius, +radius, -radius],
+    [+radius, -radius, +radius, -radius],
+    [-radius, +radius, +radius, -radius],
+    [+radius, +radius, +radius, -radius],
+    [-radius, -radius, -radius, +radius],
+    [+radius, -radius, -radius, +radius],
+    [-radius, +radius, -radius, +radius],
+    [+radius, +radius, -radius, +radius],
+    [-radius, -radius, +radius, +radius],
+    [+radius, -radius, +radius, +radius],
+    [-radius, +radius, +radius, +radius],
+    [+radius, +radius, +radius, +radius],
+    [-1/2,    0,       0,       0      ],//myball
+  ];  
   isRequestedDraw = true;
-}
-/*-----------------------------------
-  procCom
-  computer algorithm.
-  make inertia[1]
------------------------------------*/
-var procCom=function(){
-  if(map[playPos[1][3]+inertia[1][3]]
-        [playPos[1][2]+inertia[1][2]]
-        [playPos[1][1]+inertia[1][1]]
-        [playPos[1][0]+inertia[1][0]]==0){
-    // no clash with staying inertia
-    if(Math.random()>comInertia) return; //no change inertia
-  }
-  var o0 = new Array(motiondiff.length);
-  var o  = new Array(motiondiff.length);
-  for(var mi=0;mi<motiondiff.length;mi++){
-    o0[mi] = mi;
-  }
-  for(var mi=0;mi<motiondiff.length;mi++){
-    var i =parseInt((motiondiff.length-mi)*Math.random());
-    o[mi] = o0[i];
-    o0.splice(i,1);
-  }
-  var mi=0;
-  for(mi=0;mi<motiondiff.length;mi++){
-    parseInt(Math.random()*100);
-    if(map[playPos[1][3]+motiondiff[o[mi]][3]][playPos[1][2]+motiondiff[o[mi]][2]][playPos[1][1]+motiondiff[o[mi]][1]][playPos[1][0]+motiondiff[o[mi]][0]]==0){
-      inertia[1]=motiondiff[o[mi]].clone(); // change inertia
-      break;
-    }
-  }
-  if(isDebug2){
-    debugout = document.getElementById("debugout");
-    debugout.innerHTML = "debug:"+mi;
-  }
 }
 var lastmi;
 /*-----------------------------------
@@ -321,28 +186,7 @@ var lastmi;
   when player move.
 -----------------------------------*/
 var procPhysics=function(){
-  var isClush = [false,false];
-  for(var pi=0;pi<2;pi++){
-    var playNext=new Array(4);
-    for(var di=0;di<4;di++){
-      playNext[di] = playPos[pi][di]+inertia[pi][di];
-    }
-    if(map[playNext[3]][playNext[2]][playNext[1]][playNext[0]]!=SokoObj.Blank){
-      isClush[pi] = true;
-    }else{
-      map[playPos[pi][3]][playPos[pi][2]][playPos[pi][1]][playPos[pi][0]]=pi+3;
-      map[playNext[3]][playNext[2]][playNext[1]][playNext[0]]=pi+1;
-    }
-    playPos[pi] = playNext.clone();
-  }
-  camPos = playPos[0].clone();
-  if(isClush[1] && isClush[0]){
-    setGameState(2);
-  }else if(isClush[0]){
-    setGameState(3);
-  }else if(isClush[1]){
-    setGameState(4);
-  }
+  //
   isRequestedDraw = true;
 }
 var restartGame =function(){
@@ -366,96 +210,28 @@ var entryName=function(){
   when key is pressed.
 -----------------------------------*/
 var moveCursor=function(motion){
-  for(var d=0;d<4;d++){
-    camPos[d] = motiondiff[d][motion]+camPos[d];
-  }
-  if(camPos[0]<0){
-    if(camPos[2]>0){
-      camPos[0]+=mmax;
-      camPos[2]--;
-    }else{
-      camPos[0]=0;
-    }
-  }
-  if(camPos[0]==mmax){
-    if(camPos[2]<mmax-1){
-      camPos[0]=0;
-      camPos[2]++;
-    }else{
-      camPos[0]=mmax-1;
-    }
-  }
-  if(camPos[1]<0){
-    if(camPos[3]>0){
-      camPos[1]=mmax-1;
-      camPos[3]--;
-    }else{
-      camPos[1]=0;
-    }
-  }
-  if(camPos[1]==mmax){
-    if(camPos[3]<mmax-1){
-      camPos[1]=0;
-      camPos[3]++;
-    }else{
-      camPos[1]=mmax-1;
-    }
-  }
-  
-  for(var d=0;d<4;d++){
-    curPos[d] = camPos[d];
-    curPosEnd[d] = camPos[d];
-  }
 }
 /*--------------------
 transpose position of display coordinate [disp]=[x,y]
-into one of world corrdinate [wp]=[x,y,z,w].
+into one of world corrdinate [wp]=[x,y,plane index of z, plane index of w].
 --------------------*/
 var display2World = function (disp){
-  var camLenPx = SokoObj.charaLen*camLen;
-  var numerx = disp[0] - canvas[0].width/2  + camPos[2]*camLenPx + camPos[0]*SokoObj.charaLen + SokoObj.charaLen/2;
-  var numery = disp[1] - canvas[0].height/2 + camPos[3]*camLenPx + camPos[1]*SokoObj.charaLen + SokoObj.charaLen/2;
-  var wp = new Array(4);
-  wp[2] = Math.floor(numerx/camLenPx);
-  wp[3] = Math.floor(numery/camLenPx);
-  wp[0] = Math.floor((numerx%camLenPx)/SokoObj.charaLen);
-  wp[1] = Math.floor((numery%camLenPx)/SokoObj.charaLen);
+  var dx = canvas[0].width;
+  var dy = canvas[0].height;
+  var invdx = 1/dx;
+  var invdy = 1/dy;
+  var wzi = disp[0]*invdx*planes;
+  var wwi = disp[1]*invdy*planes;
+  wp = new Array(4);
+  wp[0] = (wzi%1)*2-1;
+  wp[1] = (wzi%1)*2-1;
+  wp[2] = Math.floor(wzi);
+  wp[3] = Math.floor(wwi);
   return wp;
 }
 //event handlers after queue ------------
 var handleMouseDown = function(){
-  if(mouseTarget==0){
-    //in map
-    var wiMousePos = display2World(mouseDownPos);
-    for(var d=0;d<4;d++){
-      if(wiMousePos[d]<0 || wiMousePos[d]>=mmax) return;
-    }
-    if(!mouseWithShiftKey && mode==1){
-      map[wiMousePos[3]][wiMousePos[2]][wiMousePos[1]][wiMousePos[0]] = selchara; //put charactor
-      curPos    = wiMousePos.clone(); 
-      curPosEnd = curPos.clone(); 
-      isRequestedDraw = true;
-    }else{
-      // with shift
-      curPos = wiMousePos.clone(); 
-      isRequestedDraw = true;
-    }
-  }else if(mouseTarget==1){
-    //in tool bar
-    if(mode==1){
-      for(var c=0;c<SokoObj.charactors;c++){
-        var x0 = 64*c+2;
-        var y0 = 2;
-        var x1 = x0 + 64-12;
-        var y1 = y0 + canvas[1].height-3;
-        if(x0<mouseDownPos[0] && mouseDownPos[0]<x1 && y0<mouseDownPos[1] && mouseDownPos[1]<y1){
-          selchara = c;
-          isRequestedDraw = true;
-          break;
-        }
-      }
-    }
-  }
+  //
 }
 var handleMouseDragging = function(){
   if(!mouseWithShiftKey){
@@ -463,89 +239,14 @@ var handleMouseDragging = function(){
     handleMouseDown();
   }else{
     // with shift
-    var wiMousePos = display2World(mousePos);
-    for(var d=0;d<4;d++){
-      if(wiMousePos[d]<0 || wiMousePos[d]>=mmax) return;
-    }
-    curPosEnd = wiMousePos.clone(); 
-    isRequestedDraw = true;
+    //
   }
 }
 var handleMouseUp = function(){
-  var wiMouseDownPos = display2World(mouseDownPos);
-  for(var d=0;d<4;d++){
-    if(wiMouseDownPos[d]<0 || wiMouseDownPos[d]>=mmax) return;
-  }
-  if(!mouseWithShiftKey){
-    curPosEnd = wiMouseDownPos.clone(); 
-    isRequestedDraw = true;
-  }else{
-    //with shift
-    var wiMouseUpPos = display2World(mouseUpPos);
-    for(var d=0;d<4;d++){
-      if(wiMouseUpPos[d]<0 || wiMouseUpPos[d]>=mmax) return;
-    }
-    var p0=new Array(4);
-    var p1=new Array(4);
-    if(wiMouseUpPos[3]<wiMouseDownPos[3]){
-      p0[3]=wiMouseUpPos  [3];
-      p1[3]=wiMouseDownPos[3];
-      p0[1]=wiMouseUpPos  [1];
-      p1[1]=wiMouseDownPos[1];
-    }else{
-      p0[3]=wiMouseDownPos[3];
-      p1[3]=wiMouseUpPos  [3];
-      p0[1]=wiMouseDownPos[1];
-      p1[1]=wiMouseUpPos  [1];
-    }
-    if(wiMouseUpPos[2]<wiMouseDownPos[2]){
-      p0[2]=wiMouseUpPos  [2];
-      p1[2]=wiMouseDownPos[2];
-      p0[0]=wiMouseUpPos  [0];
-      p1[0]=wiMouseDownPos[0];
-    }else{
-      p0[2]=wiMouseDownPos[2];
-      p1[2]=wiMouseUpPos  [2];
-      p0[0]=wiMouseDownPos[0];
-      p1[0]=wiMouseUpPos  [0];
-    }
-    if(p0[3]==p1[3]){
-      p0[1]=[wiMouseUpPos[1],wiMouseDownPos[1]].min();
-      p1[1]=[wiMouseUpPos[1],wiMouseDownPos[1]].max();
-    }
-    if(p0[2]==p1[2]){
-      p0[0]=[wiMouseUpPos[0],wiMouseDownPos[0]].min();
-      p1[0]=[wiMouseUpPos[0],wiMouseDownPos[0]].max();
-    }
-    for(var w=p0[3];w<=p1[3];w++){
-      var y0=0;
-      var y1=camLen-1;
-      if(w==p0[3]) y0=p0[1];
-      if(w==p1[3]) y1=p1[1];
-      for(var y=y0;y<=y1;y++){
-        for(var z=p0[2];z<=p1[2];z++){
-          var x0=0;
-          var x1=camLen-1;
-          if(z==p0[2]) x0=p0[0];
-          if(z==p1[2]) x1=p1[0];
-          for(var x=x0;x<=x1;x++){
-            map[w][z][y][x] = selchara; //put charactor
-          }//x
-        }//z
-      }//y
-    }//w
-    curPosEnd = wiMouseUpPos.clone(); 
-    isRequestedDraw = true;
-  }//with shift
+  //
 }
 var handleMouseMoving = function(){
-  var wiMousePos = display2World(mousePos);
-  for(var d=0;d<4;d++){
-    if(wiMousePos[d]<0 || wiMousePos[d]>=mmax) return;
-  }
-  curPos    = wiMousePos.clone();
-  curPosEnd = wiMousePos.clone();
-  isRequestedDraw = true;
+//
 }
 var handleMouseWheel = function(){
   if(mouseWheel[0]>0) moveCursor(0);
@@ -577,7 +278,7 @@ var handleKeyDown = function(e){
       moveCursor(motion);
       //prevent key
       if(e.preventDefault) e.preventDefault();
-      e.returnValue = false;
+//      e.returnValue = false;
       isRequestedDraw = true;
     }
   }else{
@@ -589,30 +290,10 @@ var handleKeyDown = function(e){
     inertia[0] = motiondiff[motion].clone();
     //prevent key
     if(e.preventDefault) e.preventDefault();
-    e.returnValue = false;
+//    e.returnValue = false;
     isRequestedDraw = true;
   }
 }
-window.onresize = function(){
-  var agent = navigator.userAgent;
-  if( agent.search(/iPhone/) != -1 || agent.search(/iPod/) != -1 || agent.search(/iPad/) != -1){
-    var all=document.getElementsByClassName("tdbutton");
-    for(var i=0;i<all.length;i++){
-//      all[i].style.width="100px";
-//      all[i].style.height="100px";
-    }
-    document.getElementById("canvas0").width  = 300;
-    document.getElementById("canvas0").height = 300;
-    document.getElementById("canvas1").width  = 300;
-    document.getElementById("keydescription").style.width="0%";
-    document.getElementById("keydescription").innerHTML="";
-  }else{
-    document.getElementById("canvas0").width  = [document.documentElement.clientWidth-400, 320].max();
-    document.getElementById("canvas0").height = [(document.documentElement.clientHeight-300)*0.9, 180].max();
-    document.getElementById("canvas1").width  = document.getElementById("canvas0").width;
-  }
-  isRequestedDraw = true;
-};
 var handleChangeMode = function(newmode){
   mode = newmode;
   switch(mode){

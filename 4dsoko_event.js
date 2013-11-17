@@ -31,10 +31,6 @@ var initEvent=function(){
     canvas[0].onmousemove = addEvent;
     canvas[0].onmouseup   = addEvent;
     canvas[0].onmouseout  = addEvent;
-    canvas[1].onmousedown = addEvent;
-    canvas[1].onmousemove = addEvent;
-    canvas[1].onmouseup   = addEvent;
-    canvas[1].onmouseout  = addEvent;
     window.onkeydown      = addEvent;
   }else{
     //IE Only
@@ -42,13 +38,8 @@ var initEvent=function(){
     canvas[0].attachEvent('onmousemove', addEvent_forIE);
     canvas[0].attachEvent('onmouseup',   addEvent_forIE);
     canvas[0].attachEvent('onmouseout',  addEvent_forIE);
-    canvas[1].attachEvent('onmousedown', addEvent_forIE);
-    canvas[1].attachEvent('onmousemove', addEvent_forIE);
-    canvas[1].attachEvent('onmouseup',   addEvent_forIE);
-    canvas[1].attachEvent('onmouseout',  addEvent_forIE);
     document.onkeydown      = addEvent_forIE;
   }
-  window.onresize();
 };
 // procedure
 var procEvent = function(){
@@ -124,7 +115,7 @@ var addEvent = function(e){
   if(e.type!="keydown" || e.type=="mousewheel"){
     if(!isKeyTyping && isMouseOver){
       if(e.preventDefault) e.preventDefault();
-      e.returnValue = false;
+//      e.returnValue = false;
     }
   }
 };
