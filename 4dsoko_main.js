@@ -5,12 +5,21 @@
 // static var on game
 var isDebug1=false; //debug flag
 var isDebug2=false; //debug flag
+var gameState_idle = 0;
+var gameState_shot = 1;
+var gameState_run  = 2;
  // for world
 var dims = 4;
+var pos2velocity = 0.2; // coef for velocity from position
+var vDecay = 0.99;   // decay of velocity
+var vReflect = 0.5;   // decay of velocity at reflection
+var vThres = 0.01; // threshold for stop detection
+var elast = 0.8;
  // for game
 var balls = 17;
 var myball = balls-1; //index of my ball
 var radius = 1/8;
+var margin = radius*0.1;
 var ballcolor = [
   'rgb(255,  0,  0)',
   'rgb(128,128,  0)',
@@ -32,15 +41,19 @@ var ballcolor = [
 ];
 sightcolor = 'rgb(128,0,255)';
  // for display
-var planes = 4; // 3rd & 4th dimensional expanded planes
+var planes = 5; // 3rd & 4th dimensional expanded planes
 var invpl = 1/planes;
-var sightpos  = new Array(4);
-var sightpos2 = new Array(4);
+var sightposDown  = new Array(4);
+var sightposUp = new Array(4);
 // dinamic var on game
 var timenow=0;
 var p = new Array(balls);//p[d][b] = d th dimensional position of ball b
-for(var b=0;b<balls;b++) p[b] = new Array(dims);
-gameState=2; // game state.0=playing / 1=solved and entering name / 2=stopped
+var v = new Array(balls);//v[d][b] = d th dimensional velocity of ball b
+for(var b=0;b<balls;b++){
+  p[b] = new Array(dims);
+  v[b] = new Array(dims);
+}
+var gameState      = gameState_shot;
 //ENTRY POINT --------------------------
 window.onload=function(){
   initGui();
@@ -56,11 +69,11 @@ var procAll=function(){
   }
 
   timenow += 1000/frameRate;
-  if(timenow>=1000/motionRate){
-    if(gameState==0){
+  if(timenow>=1000/frameRate){
+    if(gameState==gameState_run){
       procPhysics();
     }
-    timenow -= 1000/motionRate;
+    timenow -= 1000/frameRate;
   }
   procEvent();
 }
@@ -121,11 +134,11 @@ var procDraw=function(){
     }
   }
   //sight -----------
-  if(isMouseDragged){
+  if(isMouseDragged && gameState==gameState_shot){
     ctx[0].strokeStyle=sightcolor;
     ctx[0].strokeWeight='1';
-    var x = Math.floor((sightpos[0]+1)*0.5*dxPpl + ((sightpos[2]+1)*0.5*planes-0.5)*dxPpl);
-    var y = Math.floor((sightpos[1]+1)*0.5*dyPpl + ((sightpos[3]+1)*0.5*planes-0.5)*dyPpl);
+    var x = Math.floor((sightposDown[0]+1)*0.5*dxPpl + ((sightposDown[2]+1)*0.5*planes-0.5)*dxPpl);
+    var y = Math.floor((sightposDown[1]+1)*0.5*dyPpl + ((sightposDown[3]+1)*0.5*planes-0.5)*dyPpl);
     ctx[0].strokeRect(x-dxPpl, y-dyPpl, dxPpl, dyPpl);
     ctx[0].strokeRect(x      , y-dyPpl, dxPpl, dyPpl);
     ctx[0].strokeRect(x-dxPpl, y      , dxPpl, dyPpl);
@@ -135,9 +148,9 @@ var procDraw=function(){
   for(var b=0;b<balls+1;b++){
     var pb;
     if(b==balls){
-      if(isMouseDragged){
+      if(isMouseDragged && gameState==gameState_shot){
         //sight point
-        pb=sightpos2;
+        pb=sightposUp;
         ctx[0].strokeStyle = sightcolor;
       }else{
         continue;
@@ -190,24 +203,25 @@ var procDraw=function(){
 -----------------------------------*/
 var readyPlay=function(){
   p=[
-    [-radius, -radius, -radius, -radius],
-    [+radius, -radius, -radius, -radius],
-    [-radius, +radius, -radius, -radius],
-    [+radius, +radius, -radius, -radius],
-    [-radius, -radius, +radius, -radius],
-    [+radius, -radius, +radius, -radius],
-    [-radius, +radius, +radius, -radius],
-    [+radius, +radius, +radius, -radius],
-    [-radius, -radius, -radius, +radius],
-    [+radius, -radius, -radius, +radius],
-    [-radius, +radius, -radius, +radius],
-    [+radius, +radius, -radius, +radius],
-    [-radius, -radius, +radius, +radius],
-    [+radius, -radius, +radius, +radius],
-    [-radius, +radius, +radius, +radius],
-    [+radius, +radius, +radius, +radius],
+    [-(radius+margin), -(radius+margin), -(radius+margin), -(radius+margin)],
+    [+(radius+margin), -(radius+margin), -(radius+margin), -(radius+margin)],
+    [-(radius+margin), +(radius+margin), -(radius+margin), -(radius+margin)],
+    [+(radius+margin), +(radius+margin), -(radius+margin), -(radius+margin)],
+    [-(radius+margin), -(radius+margin), +(radius+margin), -(radius+margin)],
+    [+(radius+margin), -(radius+margin), +(radius+margin), -(radius+margin)],
+    [-(radius+margin), +(radius+margin), +(radius+margin), -(radius+margin)],
+    [+(radius+margin), +(radius+margin), +(radius+margin), -(radius+margin)],
+    [-(radius+margin), -(radius+margin), -(radius+margin), +(radius+margin)],
+    [+(radius+margin), -(radius+margin), -(radius+margin), +(radius+margin)],
+    [-(radius+margin), +(radius+margin), -(radius+margin), +(radius+margin)],
+    [+(radius+margin), +(radius+margin), -(radius+margin), +(radius+margin)],
+    [-(radius+margin), -(radius+margin), +(radius+margin), +(radius+margin)],
+    [+(radius+margin), -(radius+margin), +(radius+margin), +(radius+margin)],
+    [-(radius+margin), +(radius+margin), +(radius+margin), +(radius+margin)],
+    [+(radius+margin), +(radius+margin), +(radius+margin), +(radius+margin)],
     [-1/2,    0,       0,       0      ],//myball
-  ];  
+  ];
+  for(var b=0;b<balls;b++)for(var d=0;d<dims;d++) v[b][d] = 0;
   isRequestedDraw = true;
 }
 var lastmi;
@@ -217,23 +231,80 @@ var lastmi;
   when player move.
 -----------------------------------*/
 var procPhysics=function(){
-  //
+  var isStopped = 1;
+  
+  // move
+  var p0;
+  var v0;
+  p0 = p.clone();
+  for(var b=0;b<balls;b++){
+    for(var d=0;d<dims;d++){
+      p[b][d] += v[b][d];
+    }
+  }
+  // wall collision
+  for(var b=0;b<balls;b++){
+    for(var d=0;d<dims;d++){
+      if(p[b][d]<-1){
+        p[b][d] = (-1)+(-1)-p[b][d];
+        v[b][d] *= -vReflect;
+      }
+      if(p[b][d]>+1){
+        p[b][d] = (+1)+(+1)-p[b][d];
+        v[b][d] *= -vReflect;
+      }
+    }
+  }
+  // balls collision
+  p0 = p.clone();
+  v0 = v.clone();
+  for(var b0=0;b0<balls;b0++){
+    for(var b1=b0+1;b1<balls;b1++){
+      var pabs = 0;
+      var dp = [0,0,0,0];
+      for(var d=0;d<dims;d++){
+        dp[d] = p[b1][d] - p[b0][d];
+        pabs += dp[d]*dp[d];
+      }
+      pabs = Math.sqrt(pabs);
+      if(pabs < radius*2){
+        // fix position
+        p[b0] = p0[b0].clone();
+        p[b1] = p0[b1].clone();
+        // velocity change
+        for(var d=0;d<dims;d++){
+          v[b0][d] = ( -v0[b0][d] + v0[b1][d] )*( 1 + elast )/2 + v0[b0][d];
+          v[b1][d] = ( -v0[b1][d] + v0[b0][d] )*( 1 + elast )/2 + v0[b1][d];
+        }
+      }
+    }
+  }
+  
+  // valocity decay & stop detection
+  for(var b=0;b<balls;b++){
+    var vpow = 0;
+    for(var d=0;d<dims;d++){
+      v[b][d] *= vDecay; // decay velocity
+      vpow += v[b][d]*v[b][d];
+    }
+    if(vpow >= vThres*vThres){
+      isStopped = 0;
+    }
+  }
+  if(isStopped){
+    //reset vel to zero
+    for(var b=0;b<balls;b++){
+      for(var d=0;d<dims;d++){
+        v[b][d]=0;
+      }
+    }
+    gameState = gameState_shot;
+  }
   isRequestedDraw = true;
 }
 var restartGame =function(){
   initGame();
-  setGameState(0);
-}
-/*----------------------------------------
- entryName
-----------------------------------------*/
-var entryName=function(){
-  var name = document.getElementById('nameentrytext').value;
-  if(name != ""){
-    winnerName = name;
-    addWinner();
-    setGameState(2); // inclement game state
-  }
+  gameState = gameState_shot; // back to before play
 }
 /*-----------------------------------
   moveCursor
@@ -264,21 +335,29 @@ var display2World = function (disp){
 }
 //event handlers after queue ------------
 var handleMouseDown = function(){
-  sightpos = display2World(mouseDownPos);
-  sightpos2 = sightpos.clone();
-  isRequestedDraw = true;
+  if(gameState==gameState_shot){
+    sightposDown = display2World(mouseDownPos);
+    sightposUp = sightposDown.clone();
+    isRequestedDraw = true;
+  }
 }
 var handleMouseDragging = function(){
-  sightpos2 = sightpos.clone();
-  sightpos2[2] += (mousePos[0]-mouseDownPos[0])/canvas[0].width *2;
-  sightpos2[3] += (mousePos[1]-mouseDownPos[1])/canvas[0].height*2;
-  isRequestedDraw = true;
+  if(gameState==gameState_shot){
+    sightposUp = sightposDown.clone();
+    sightposUp[2] += (mousePos[0]-mouseDownPos[0])/canvas[0].width *2;
+    sightposUp[3] += (mousePos[1]-mouseDownPos[1])/canvas[0].height*2;
+    isRequestedDraw = true;
+  }
 }
 var handleMouseUp = function(){
-  sightpos2 = sightpos.clone();
-  sightpos2[2] += (mouseUpPos[0]-mouseDownPos[0])/canvas[0].width *2;
-  sightpos2[3] += (mouseUpPos[1]-mouseDownPos[1])/canvas[0].height*2;
-  isRequestedDraw = true;
+  if(gameState==gameState_shot){
+    sightposUp = sightposDown.clone();
+    sightposUp[2] += (mouseUpPos[0]-mouseDownPos[0])/canvas[0].width *2;
+    sightposUp[3] += (mouseUpPos[1]-mouseDownPos[1])/canvas[0].height*2;
+    for(var d=0;d<dims;d++) v[myball][d] = (sightposUp[d] - p[myball][d])*pos2velocity;
+    isRequestedDraw = true;
+    gameState=gameState_run;
+  }
 }
 var handleMouseMoving = function(){
 //
@@ -326,38 +405,7 @@ var rotateLevel =function(d0,d1){
   if(mode==0) readyPlay();
   isRequestedDraw = true;
 }
-var setGameState=function(state){
-  switch(state){
-    case 0: // unsolved
-      document.getElementById('nameentrydiv').innerHTML = "";
-      gameState = state;
-    break;
-    case 1:
-      if(curLevelIndex>=0){
-        document.getElementById('nameentrydiv').innerHTML
-          = "Yes oh my gosh! Congratulations and please enter name here! -&gt; <input id='nameentrytext' type=text size=10 onfocus='javascript:isKeyTyping=true;' onblur='javascript:isKeyTyping=false;'><input id='nameentrybutton' type=button onclick='javascript:entryName();' value='OK'>";
-      }else{
-      document.getElementById('nameentrydiv').innerHTML
-        = "Congratulations! please try the level below!";
-      }
-      gameState = state;
-    break;
-    case 2:
-      document.getElementById('nameentrydiv').innerHTML = "Draw!";
-      gameState = state;
-    break;
-    case 3:
-      document.getElementById('nameentrydiv').innerHTML = "You Lose...";
-      gameState = state;
-    break;
-    case 4:
-      document.getElementById('nameentrydiv').innerHTML = "You Won!!";
-      gameState = state;
-    break;
-    default:
-    break;
-  }
-}
+
 var print=function(str){
   document.getElementById('debugout').innerHTML = str;
 }
