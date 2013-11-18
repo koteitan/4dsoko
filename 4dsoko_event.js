@@ -40,6 +40,7 @@ var initEvent=function(){
     canvas[0].attachEvent('onmouseout',  addEvent_forIE);
     document.onkeydown      = addEvent_forIE;
   }
+  window.onresize();
 };
 // procedure
 var procEvent = function(){

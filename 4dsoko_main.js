@@ -368,6 +368,23 @@ var handleKeyDown = function(e){
 //    var c = String.fromCharCode(e.keyCode);
 //    var motion = "AW__DX__".indexOf(c);
 }
+window.onresize = function(){
+  var agent = navigator.userAgent;
+  if( agent.search(/iPhone/) != -1 || agent.search(/iPod/) != -1 || agent.search(/iPad/) != -1){
+    var all=document.getElementsByClassName("tdbutton");
+    for(var i=0;i<all.length;i++){
+    }
+    document.getElementById("canvas0").width  = 512;
+    document.getElementById("canvas0").height = 512;
+  }else{
+    var newWidth  = [document.documentElement.clientWidth-300, 320].max();
+    var newHeight = [(document.documentElement.clientHeight-160)*0.9, 180].max();
+    var newSize = [newWidth, newHeight].min();
+    document.getElementById("canvas0").width  = newSize;
+    document.getElementById("canvas0").height = newSize;
+  }
+  isRequestedDraw = true;
+};
 var handleChangeMode = function(newmode){
   mode = newmode;
   switch(mode){
