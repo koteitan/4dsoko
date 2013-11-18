@@ -82,12 +82,7 @@ var canvas = new Array(2);
 var ctx    = new Array(2);
 var isRequestedDraw = true;
 var frameRate;
-if(document.all){
-  frameRate = 2; // [fps]
-}else{
-  frameRate  = 60; // [fps]
-}
-var motionRate = 2; // [fps]
+frameRate  = 60; // [fps]
 var isKeyTyping;
 //initialize -----------
 //gui
