@@ -47,10 +47,10 @@ var sightposDown  = new Array(4);
 var sightposUp = new Array(4);
 // dinamic var on game
 var timenow=0;
-var p = new Array(balls);//p[d][b] = d th dimensional position of ball b
+var q = new Array(balls);//q[d][b] = d th dimensional position of ball b
 var v = new Array(balls);//v[d][b] = d th dimensional velocity of ball b
 for(var b=0;b<balls;b++){
-  p[b] = new Array(dims);
+  q[b] = new Array(dims);
   v[b] = new Array(dims);
 }
 var gameState      = gameState_shot;
@@ -151,17 +151,17 @@ var procDraw=function(){
         continue;
       }
     }else{
-      pb=p[b];
+      pb=q[b];
       ctx[0].strokeStyle = ballcolor[b];
     }
     ctx[0].strokeWeight='1';
 //    |        |        |         |         |:
 //         |        |         |        |     :
-//   -1      -0.5       0       +0.5       +1:            p[3]
-//    0        1        2         3          :           (p[3]+1)*0.5*planes
-//   0.5   1        2         3        4  4.5:           (p[3]+1)*0.5*planes+0.5
-//    0000 11111111 222222222 33333333 4444  :Math.floor((p[3]+1)*0.5*planes+0.5)
-//   0.5 1 0  0.5 1 0  0.5  1 0  0.5 1 0  0.5:          ((p[3]+1)*0.5*planes+0.5)%1
+//   -1      -0.5       0       +0.5       +1:            q[3]
+//    0        1        2         3          :           (q[3]+1)*0.5*planes
+//   0.5   1        2         3        4  4.5:           (q[3]+1)*0.5*planes+0.5
+//    0000 11111111 222222222 33333333 4444  :Math.floor((q[3]+1)*0.5*planes+0.5)
+//   0.5 1 0  0.5 1 0  0.5  1 0  0.5 1 0  0.5:          ((q[3]+1)*0.5*planes+0.5)%1
 //
     var z0 = (pb[2]+1)*0.5*planes+0.5;
     var w0 = (pb[3]+1)*0.5*planes+0.5;
@@ -197,7 +197,7 @@ var procDraw=function(){
   ready level before entering play mode.
 -----------------------------------*/
 var readyPlay=function(){
-  p=[
+  q=[
     [-(radius+margin), -(radius+margin), -(radius+margin), -(radius+margin)],
     [+(radius+margin), -(radius+margin), -(radius+margin), -(radius+margin)],
     [-(radius+margin), +(radius+margin), -(radius+margin), -(radius+margin)],
@@ -229,43 +229,47 @@ var procPhysics=function(){
   var isStopped = 1;
   
   // move
-  var p0;
+  var q0;
   var v0;
-  p0 = p.clone();
+  q0 = q.clone();
   for(var b=0;b<balls;b++){
     for(var d=0;d<dims;d++){
-      p[b][d] += v[b][d];
+      q[b][d] += v[b][d];
     }
   }
+  
+  // collision time analysis
+  
+  
   // wall collision
   for(var b=0;b<balls;b++){
     for(var d=0;d<dims;d++){
-      if(p[b][d]<-1){
-        p[b][d] = (-1)+(-1)-p[b][d];
+      if(q[b][d]<-1){
+        q[b][d] = (-1)+(-1)-q[b][d];
         v[b][d] *= -vReflect;
       }
-      if(p[b][d]>+1){
-        p[b][d] = (+1)+(+1)-p[b][d];
+      if(q[b][d]>+1){
+        q[b][d] = (+1)+(+1)-q[b][d];
         v[b][d] *= -vReflect;
       }
     }
   }
   // balls collision
-  p0 = p.clone();
+  q0 = q.clone();
   v0 = v.clone();
   for(var b0=0;b0<balls;b0++){
     for(var b1=b0+1;b1<balls;b1++){
       var pabs = 0;
-      var dp = [0,0,0,0];
+      var dq = [0,0,0,0];
       for(var d=0;d<dims;d++){
-        dp[d] = p[b1][d] - p[b0][d];
-        pabs += dp[d]*dp[d];
+        dq[d] = q[b1][d] - q[b0][d];
+        pabs += dq[d]*dq[d];
       }
       pabs = Math.sqrt(pabs);
       if(pabs < radius*2){
         // fix position
-        p[b0] = p0[b0].clone();
-        p[b1] = p0[b1].clone();
+        q[b0] = q0[b0].clone();
+        q[b1] = q0[b1].clone();
         // velocity change
         for(var d=0;d<dims;d++){
           v[b0][d] = ( -v0[b0][d] + v0[b1][d] )*( 1 + elast )/2 + v0[b0][d];
@@ -274,6 +278,7 @@ var procPhysics=function(){
       }
     }
   }
+  
   
   // valocity decay & stop detection
   for(var b=0;b<balls;b++){
@@ -319,14 +324,14 @@ var display2World = function (disp){
   var invdy = 1/dy;
   var wzi = disp[0]*invdx*planes;
   var wwi = disp[1]*invdy*planes;
-  wp = new Array(4);
-  wp[0] = (wzi%1)*2-1;
-  wp[1] = (wwi%1)*2-1;
-  wp[2] = Math.floor(wzi);
-  wp[3] = Math.floor(wwi);
-  wp[2] = (wp[2]+0.5)*invpl*2-1;
-  wp[3] = (wp[3]+0.5)*invpl*2-1;
-  return wp;
+  wq = new Array(4);
+  wq[0] = (wzi%1)*2-1;
+  wq[1] = (wwi%1)*2-1;
+  wq[2] = Math.floor(wzi);
+  wq[3] = Math.floor(wwi);
+  wq[2] = (wq[2]+0.5)*invpl*2-1;
+  wq[3] = (wq[3]+0.5)*invpl*2-1;
+  return wq;
 }
 //event handlers after queue ------------
 var handleMouseDown = function(){
@@ -349,7 +354,7 @@ var handleMouseUp = function(){
     sightposUp = sightposDown.clone();
     sightposUp[2] += (mouseUpPos[0]-mouseDownPos[0])/canvas[0].width *2;
     sightposUp[3] += (mouseUpPos[1]-mouseDownPos[1])/canvas[0].height*2;
-    for(var d=0;d<dims;d++) v[myball][d] = (sightposUp[d] - p[myball][d])*pos2velocity;
+    for(var d=0;d<dims;d++) v[myball][d] = (sightposUp[d] - q[myball][d])*pos2velocity;
     isRequestedDraw = true;
     gameState=gameState_run;
   }
@@ -401,7 +406,7 @@ var handleChangeMode = function(newmode){
   isRequestedDraw = true;
 }
 var rotateLevel =function(d0,d1){
-  var map0 = map.clone();
+  var maq0 = maq.clone();
   var di0 = [0,1,2,3];
   var di1 = [0,1,2,3];
   var d = new Array(4);
@@ -412,7 +417,7 @@ var rotateLevel =function(d0,d1){
   for(d[1]=0;d[1]<mmax;d[1]++){
   for(d[2]=0;d[2]<mmax;d[2]++){
   for(d[3]=0;d[3]<mmax;d[3]++){
-    map[d[di1[3]]][d[di1[2]]][d[di1[1]]][d[di1[0]]] = map0[d[di0[3]]][d[di0[2]]][d[di0[1]]][d[di0[0]]];
+    maq[d[di1[3]]][d[di1[2]]][d[di1[1]]][d[di1[0]]] = maq0[d[di0[3]]][d[di0[2]]][d[di0[1]]][d[di0[0]]];
   }}}}
   if(mode==0) readyPlay();
   isRequestedDraw = true;
