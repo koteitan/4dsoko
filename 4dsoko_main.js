@@ -10,11 +10,12 @@ var gameState_shot = 1;
 var gameState_run  = 2;
  // for world
 var dims = 4;
+var secPframe = 1; // [sec/frame]
 var pos2velocity = 0.2; // coef for velocity from position
-var vDecay = 0.99;   // decay of velocity
-var vReflect = 0.5;   // decay of velocity at reflection
-var vThres = 0.01; // threshold for stop detection
-var elast = 0.8;
+var vDecay = 0.99;  // decay of velocity
+var vReflect = 0.5; // decay of velocity at reflection
+var vThres = 0.01;  // threshold for stop detection
+var elast = 0.8;    //
  // for game
 var balls = 17;
 var myball = balls-1; //index of my ball
@@ -227,57 +228,126 @@ var lastmi;
 -----------------------------------*/
 var procPhysics=function(){
   var isStopped = 1;
-  
-  // move
-  var q0;
-  var v0;
-  q0 = q.clone();
-  for(var b=0;b<balls;b++){
-    for(var d=0;d<dims;d++){
-      q[b][d] += v[b][d];
-    }
-  }
-  
-  // collision time analysis
-  
-  
-  // wall collision
-  for(var b=0;b<balls;b++){
-    for(var d=0;d<dims;d++){
-      if(q[b][d]<-1){
-        q[b][d] = (-1)+(-1)-q[b][d];
-        v[b][d] *= -vReflect;
-      }
-      if(q[b][d]>+1){
-        q[b][d] = (+1)+(+1)-q[b][d];
-        v[b][d] *= -vReflect;
-      }
-    }
-  }
-  // balls collision
-  q0 = q.clone();
-  v0 = v.clone();
-  for(var b0=0;b0<balls;b0++){
-    for(var b1=b0+1;b1<balls;b1++){
-      var pabs = 0;
-      var dq = [0,0,0,0];
+    
+  var startt = 0;         // start of analysed time
+  var endt   = secPframe; // start of analysed time
+  do{
+    var ctime    = 0; // collision time [0<ctime<1]
+    var cb0      = 0; // collision ball 0
+    var cb1      = 0; // collision ball 1 (>balls:dimension of wall)
+    var dt = endt-startt;
+    var ctimeMin = 1; // minimum collision time
+    
+    // temporary motion
+    var q1 = q.clone();
+    for(var b=0;b<balls;b++){
       for(var d=0;d<dims;d++){
-        dq[d] = q[b1][d] - q[b0][d];
-        pabs += dq[d]*dq[d];
+        q1[b][d] += v[b][d]*dt;
       }
-      pabs = Math.sqrt(pabs);
-      if(pabs < radius*2){
-        // fix position
-        q[b0] = q0[b0].clone();
-        q[b1] = q0[b1].clone();
-        // velocity change
-        for(var d=0;d<dims;d++){
-          v[b0][d] = ( -v0[b0][d] + v0[b1][d] )*( 1 + elast )/2 + v0[b0][d];
-          v[b1][d] = ( -v0[b1][d] + v0[b0][d] )*( 1 + elast )/2 + v0[b1][d];
+    }
+    // backup
+    var q0 = q.clone();
+    var v0 = v.clone();
+
+    // collision detection
+    for(var b=0;b<balls;b++){
+      for(var d=0;d<dims;d++){
+        if(q1[b][d]<-1+radius){
+          // collision is detected
+          ctime = ((-1)+radius-q0[b][d])/(q1[b][d]-q0[b][d]);
+          if(ctime < ctimeMin){
+            // renew minimum collision
+            ctimeMin = ctime;
+            cb0 = b;
+            cb1 = balls + d;
+          }
+        }
+        if(q1[b][d]>+1-radius){
+          // collision is detected
+          ctime = ((+1)-radius-q0[b][d])/(q1[b][d]-q0[b][d]);
+          if(ctime < ctimeMin){
+            // renew minimum collision
+            ctimeMin = ctime;
+            cb0 = b;
+            cb1 = balls + d;
+          }
         }
       }
     }
-  }
+    
+    // balls collision
+    for(var b0=0;b0<balls;b0++){
+      for(var b1=b0+1;b1<balls;b1++){
+        /*
+          sum[d]{(
+                  +(1-t)q[b0][d]+tq1[b0][d] 
+                  -(1-t)q[b1][d]+tq1[b1][d] 
+                )^2
+          }-(2r)^2 = 0 ...(*1) && 0<t<1 
+          then collision time is t.
+        */
+        var eqa = 0; // a of quadratic formula of (*1)
+        var eqb = 0; // b of quadratic formula of (*1)
+        var eqc = 0; // c of quadratic formula of (*1)
+        /* quadratic formula at^2+bt+c=0 */
+        for(var d=0;d<dims;d++){
+          var dq0 = q0[b1][d] - q0[b0][d];
+          var dq1 = q1[b1][d] - q1[b0][d];
+          var dqd = dq0 - dq1;
+          eqa += dqd   *dqd   ;
+          eqb += dq0[d]*dqd   ;
+          eqc += dq0[d]*dq0[d];
+        }
+        eqb *= -2;
+        eqc += -4*radius*radius;
+        var charaeq = eqb*eqb - 4*eqa*eqc; // characteristic equation
+        if(charaeq>0){
+          ctime = (-b+Math.sqrt(charaeq))/(2*eqa); // quadratic formula
+          if(ctime>0 && ctime<ctimeMin){
+            // minimmum collision is detected
+            ctimeMin = ctime;
+            cb0 = b0;
+            cb1 = b1;
+          }
+        }//if
+      }//b1
+    }//b0
+    
+    // move until ctime
+    for(var b=0;b<balls;b++){
+      for(var d=0;d<dims;d++){
+        q[b][d] += v0[b][d]*(dt*ctimeMin);
+      }
+    }
+    if(ctimeMin<1){
+      // collision effect
+      if(cb1<balls){
+        //balls collision
+        var dq = [0,0,0,0];
+        var dv = [0,0,0,0];
+        var nv = [0,0,0,0];
+        var dq2 = 0;
+        for(var d=0;d<dims;d++){
+          dq[d]  = q0[cb1][d]-q0[cb0][d];
+          dv[d]  = v0[cb1][d]-q0[cb0][d];
+          nv[d]  = dq[d]*dv[d];
+          dq2   += dq[d]*dq[d];
+        }
+        
+        for(var d=0;d<dims;d++){
+          nv[d] /= dq2;
+          v[cb0][d] = +nv[d]*(1 + elast)/2;
+          v[cb1][d] = -nv[d]*(1 + elast)/2;
+        }
+      }else{
+        //ball and wall collision
+        v[cb0][cb1-balls] = v0[cb0][cb1-balls] * -vReflect;
+      }//if ball or wall
+      startt = dt*ctimeMin;
+    }else{
+      var a=a+1;
+    }//if ctimeMIn
+  }while(ctimeMin<1);//do
   
   
   // valocity decay & stop detection
