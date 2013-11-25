@@ -283,26 +283,28 @@ var procPhysics=function(){
                   +(1-t)q[b0][d]+tq1[b0][d] 
                   -(1-t)q[b1][d]+tq1[b1][d] 
                 )^2
-          }-(2r)^2 = 0 ...(*1) && 0<t<1 
+          } < (2r)^2 ...(*1) && 0<t<1 
           then collision time is t.
         */
         var eqa = 0; // a of quadratic formula of (*1)
         var eqb = 0; // b of quadratic formula of (*1)
         var eqc = 0; // c of quadratic formula of (*1)
         /* quadratic formula at^2+bt+c=0 */
+        var powdq1 = 0.0;
         for(var d=0;d<dims;d++){
           var dq0 = q0[b1][d] - q0[b0][d];
           var dq1 = q1[b1][d] - q1[b0][d];
           var dqd = dq0 - dq1;
-          eqa += dqd   *dqd   ;
-          eqb += dq0[d]*dqd   ;
-          eqc += dq0[d]*dq0[d];
+          powdq1 += dq1*dq1;      
+          eqa += dqd*dqd;
+          eqb += dq0*dqd;
+          eqc += dq0*dq0;
         }
-        eqb *= -2;
+        eqb *= +2;
         eqc += -4*radius*radius;
         var charaeq = eqb*eqb - 4*eqa*eqc; // characteristic equation
         if(charaeq>0){
-          ctime = (-b+Math.sqrt(charaeq))/(2*eqa); // quadratic formula
+          ctime = (-eqb+Math.sqrt(charaeq))/(2*eqa); // quadratic formula
           if(ctime>0 && ctime<ctimeMin){
             // minimmum collision is detected
             ctimeMin = ctime;
@@ -325,19 +327,22 @@ var procPhysics=function(){
         //balls collision
         var dq = [0,0,0,0];
         var dv = [0,0,0,0];
-        var nv = [0,0,0,0];
+        var dqdv = 0.0;
         var dq2 = 0;
         for(var d=0;d<dims;d++){
           dq[d]  = q0[cb1][d]-q0[cb0][d];
-          dv[d]  = v0[cb1][d]-q0[cb0][d];
-          nv[d]  = dq[d]*dv[d];
+          dv[d]  = v0[cb1][d]-v0[cb0][d];
+          dqdv  += dq[d]*dv[d];
           dq2   += dq[d]*dq[d];
+        }
+        var nv = [0,0,0,0];
+        for(var d=0;d<dims;d++){
+          nv[d] = dqdv*dq[d]/dq2;
         }
         
         for(var d=0;d<dims;d++){
-          nv[d] /= dq2;
-          v[cb0][d] = +nv[d]*(1 + elast)/2;
-          v[cb1][d] = -nv[d]*(1 + elast)/2;
+          v[cb0][d] += +nv[d]*(1 + elast)/2;
+          v[cb1][d] += -nv[d]*(1 + elast)/2;
         }
       }else{
         //ball and wall collision
