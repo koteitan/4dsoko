@@ -19,8 +19,8 @@ var elast = 0.99;    //
  // for game
 var balls = 10+1;
 var myball = balls-1; //index of my ball
-var radius = 1/16;
-var radiusm = radius*1.5;
+var radius = 1/8;
+var radiusm = radius*1.1;
 var ballcolor = [
   'rgb(255,  0,  0)',
   'rgb(128,128,  0)',
@@ -60,7 +60,7 @@ var initialq=[
 
 sightcolor = 'rgb(128,0,255)';
  // for display
-var planes = 3; // 3rd & 4th dimensional expanded planes
+var planes = 5; // 3rd & 4th dimensional expanded planes
 var invpl = 1/planes;
 var sightposDown  = new Array(4);
 var sightposUp = new Array(4);
