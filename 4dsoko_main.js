@@ -13,33 +13,51 @@ var dims = 4;
 var secPframe = 1; // [sec/frame]
 var pos2velocity = 0.2; // coef for velocity from position
 var vDecay = 0.99;  // decay of velocity
-var vReflect = 0.5; // decay of velocity at reflection
+var vReflect = 0.8; // decay of velocity at reflection
 var vThres = 0.01;  // threshold for stop detection
-var elast = 0.8;    //
+var elast = 0.99;    //
  // for game
-var balls = 17;
+var balls = 10+1;
 var myball = balls-1; //index of my ball
 var radius = 1/8;
-var margin = radius*0.1;
+var radiusm = radius*1.1;
 var ballcolor = [
   'rgb(255,  0,  0)',
   'rgb(128,128,  0)',
   'rgb(255,128,  0)',
   'rgb(  0,255,  0)',
-  'rgb(128,255,  0)',
+//  'rgb(128,255,  0)',
   'rgb(255,255,  0)',
   'rgb(128,  0,128)',
-  'rgb(255,  0,128)',
-  'rgb(  0,128,128)',
-  'rgb(128,128,128)',
-  'rgb(  0,255,128)',
+//  'rgb(255,  0,128)',
+//  'rgb(  0,128,128)',
+//  'rgb(128,128,128)',
+//  'rgb(  0,255,128)',
   'rgb(  0,  0,255)',
-  'rgb(128,  0,255)',
+//  'rgb(128,  0,255)',
   'rgb(255,  0,255)',
   'rgb(  0,128,255)',
   'rgb(  0,255,255)',
   'rgb(255,255,255)' //my ball
 ];
+var sq3 = Math.sqrt(3);
+var initialq=[
+    [radiusm*sq3*0,radiusm* 0,0,0],
+    
+    [radiusm*sq3*1,radiusm*-1,0,0],
+    [radiusm*sq3*1,radiusm*+1,0,0],
+    
+    [radiusm*sq3*2,radiusm*+2,0,0],
+    [radiusm*sq3*2,radiusm* 0,0,0],
+    [radiusm*sq3*2,radiusm*-2,0,0],
+    
+    [radiusm*sq3*3,radiusm*-3,0,0],
+    [radiusm*sq3*3,radiusm*+1,0,0],
+    [radiusm*sq3*3,radiusm*-1,0,0],
+    [radiusm*sq3*3,radiusm*+3,0,0],
+    [-1/2,    0,       0,       0      ],//myball
+  ];
+
 sightcolor = 'rgb(128,0,255)';
  // for display
 var planes = 5; // 3rd & 4th dimensional expanded planes
@@ -110,15 +128,17 @@ var procDraw=function(){
   var dy = canvas[0].height;
   var dxPpl = dx*invpl;
   var dyPpl = dy*invpl;
+  ctx[0].strokeWeight='1';
   //clear ---------
+  ctx[0].lineWidth='1';
   ctx[0].clearRect(0, 0, dx-1, dy-1);
   //border ---------
+  ctx[0].lineWidth='1';
   ctx[0].strokeStyle='rgb(0,0,0)';
-  ctx[0].strokeWeight='1';
   ctx[0].strokeRect(0, 0, dx-1, dy-1);
   //planes ---------
+  ctx[0].lineWidth='1';
   ctx[0].strokeStyle='rgb(0,255,0)';
-  ctx[0].strokeWeight='1';
   for(var x=0;x<planes;x++){
     for(var y=0;y<planes;y++){
       ctx[0].strokeRect(
@@ -130,9 +150,9 @@ var procDraw=function(){
     }
   }
   //sight -----------
+  ctx[0].lineWidth='2';
   if(isMouseDragged && gameState==gameState_shot){
     ctx[0].strokeStyle=sightcolor;
-    ctx[0].strokeWeight='1';
     var x = Math.floor((sightposDown[0]+1)*0.5*dxPpl + ((sightposDown[2]+1)*0.5*planes-0.5)*dxPpl);
     var y = Math.floor((sightposDown[1]+1)*0.5*dyPpl + ((sightposDown[3]+1)*0.5*planes-0.5)*dyPpl);
     ctx[0].strokeRect(x-dxPpl, y-dyPpl, dxPpl, dyPpl);
@@ -198,25 +218,7 @@ var procDraw=function(){
   ready level before entering play mode.
 -----------------------------------*/
 var readyPlay=function(){
-  q=[
-    [-(radius+margin), -(radius+margin), -(radius+margin), -(radius+margin)],
-    [+(radius+margin), -(radius+margin), -(radius+margin), -(radius+margin)],
-    [-(radius+margin), +(radius+margin), -(radius+margin), -(radius+margin)],
-    [+(radius+margin), +(radius+margin), -(radius+margin), -(radius+margin)],
-    [-(radius+margin), -(radius+margin), +(radius+margin), -(radius+margin)],
-    [+(radius+margin), -(radius+margin), +(radius+margin), -(radius+margin)],
-    [-(radius+margin), +(radius+margin), +(radius+margin), -(radius+margin)],
-    [+(radius+margin), +(radius+margin), +(radius+margin), -(radius+margin)],
-    [-(radius+margin), -(radius+margin), -(radius+margin), +(radius+margin)],
-    [+(radius+margin), -(radius+margin), -(radius+margin), +(radius+margin)],
-    [-(radius+margin), +(radius+margin), -(radius+margin), +(radius+margin)],
-    [+(radius+margin), +(radius+margin), -(radius+margin), +(radius+margin)],
-    [-(radius+margin), -(radius+margin), +(radius+margin), +(radius+margin)],
-    [+(radius+margin), -(radius+margin), +(radius+margin), +(radius+margin)],
-    [-(radius+margin), +(radius+margin), +(radius+margin), +(radius+margin)],
-    [+(radius+margin), +(radius+margin), +(radius+margin), +(radius+margin)],
-    [-1/2,    0,       0,       0      ],//myball
-  ];
+  q=initialq.clone();
   for(var b=0;b<balls;b++)for(var d=0;d<dims;d++) v[b][d] = 0;
   isRequestedDraw = true;
 }
