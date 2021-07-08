@@ -24,7 +24,7 @@ var MouseRight = 2;
 var initEvent=function(){
   eventQueue = new Array(0);
   if (window.addEventListener) window.addEventListener('DOMMouseScroll', addEvent, false);
-  window.onmousewheel = document.onmousewheel = addEvent;
+//  window.onmousewheel = document.onmousewheel = addEvent;
   if (!document.all){
     //not IE
     canvas[0].onmousedown = addEvent;
@@ -47,22 +47,6 @@ var initEvent=function(){
     canvas[1].attachEvent('onmouseup',   addEvent_forIE);
     canvas[1].attachEvent('onmouseout',  addEvent_forIE);
     document.onkeydown      = addEvent_forIE;
-  }
-  if(document.getElementById("mode_play").addEventListener){
-    document.getElementById("mode_play").addEventListener("click", function(){
-      handleChangeMode(document.getElementById("modeform").mode[0].checked?0:1);
-    });
-    document.getElementById("mode_edit").addEventListener("click", function(){
-      handleChangeMode(document.getElementById("modeform").mode[0].checked?0:1);
-    });
-  }else{
-    //IE
-    document.getElementById("mode_play").attachEvent("onclick", function(){
-      handleChangeMode(document.getElementById("modeform").mode[0].checked?0:1);
-    });
-    document.getElementById("mode_edit").attachEvent("onclick", function(){
-      handleChangeMode(document.getElementById("modeform").mode[0].checked?0:1);
-    });
   }
   window.onresize();
 };
